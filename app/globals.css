@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Tanpa dark mode (lihat CLAUDE.md) — paksa skema terang */
+:root {
+  color-scheme: light;
+}
+
+html {
+  background: #f1f5f9;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+}
