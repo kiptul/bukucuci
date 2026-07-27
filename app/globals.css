@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-/* Palet "buku nota": kertas hangat, tinta hitam, satu warna aksen.
-   Sengaja menghindari biru default dan sudut serba bulat. */
 @theme {
   --color-kertas: #f2efe8;
   --color-kertas-terang: #fbfaf6;
@@ -16,7 +14,6 @@
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
-/* Tanpa dark mode (lihat CLAUDE.md) — paksa skema terang */
 :root {
   color-scheme: light;
 }
@@ -29,7 +26,6 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Angka rupiah & qty sejajar rapi di kolom */
 .angka {
   font-variant-numeric: tabular-nums;
 }
