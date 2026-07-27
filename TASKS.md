@@ -31,7 +31,7 @@ git add -A && git commit -m "tugas N: <nama tugas>"
 
 ## Tahap 2 — Inti Order
 
-- [ ] **5. Form input order**
+- [x] **5. Form input order**
   Alur: ketik nomor HP → kalau pelanggan sudah ada, nama terisi otomatis; kalau belum, minta nama → pilih layanan → isi qty → total dihitung otomatis → simpan. Kode order dibuat otomatis. Selesai kalau: order tersimpan di tabel `pesanan` + `pesanan_item`, dan `riwayat_status` otomatis terisi status `MASUK` oleh trigger.
 
 - [ ] **6. Daftar order**
