@@ -37,7 +37,7 @@ git add -A && git commit -m "tugas N: <nama tugas>"
 - [x] **6. Daftar order**
   Tampilkan order terbaru di atas. Ada pencarian berdasarkan nama, nomor HP, atau kode order. Ada filter status. Selesai kalau: order yang dibuat di tugas 5 muncul, dan pencarian berfungsi.
 
-- [ ] **7. Detail order + ubah status**
+- [x] **7. Detail order + ubah status**
   Halaman detail berisi info order dan tombol untuk mengubah status: `MASUK → SIAP → DIAMBIL`. Ada juga tombol `BATAL`. Selesai kalau: status berubah dan tercatat di `riwayat_status` beserta waktunya.
 
 ## Tahap 3 — WhatsApp (ini nilai jual produk)

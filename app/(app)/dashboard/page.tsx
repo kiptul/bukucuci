@@ -38,7 +38,9 @@ export default async function Dashboard({
 
   let kueri = db
     .from("pesanan")
-    .select("id, kode, total, status, created_at, pelanggan:pelanggan_id(nama, no_hp)")
+    .select(
+      "id, kode, total, status, created_at, pelanggan:pelanggan_id(nama, no_hp)",
+    )
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -56,7 +58,7 @@ export default async function Dashboard({
       .or(
         [`nama.ilike.%${cari}%`, hp && `no_hp.ilike.%${hp}%`]
           .filter(Boolean)
-          .join(",")
+          .join(","),
       );
 
     const idPelanggan = (cocok ?? []).map((p) => p.id);
@@ -66,7 +68,7 @@ export default async function Dashboard({
         idPelanggan.length && `pelanggan_id.in.(${idPelanggan.join(",")})`,
       ]
         .filter(Boolean)
-        .join(",")
+        .join(","),
     );
   }
 
@@ -128,25 +130,30 @@ export default async function Dashboard({
       ) : (
         <ul className="divide-y divide-garis border-t border-garis">
           {pesanan.map((p) => (
-            <li key={p.id} className="px-4 py-3.5">
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="angka font-mono text-sm font-semibold">
-                  {p.kode}
-                </span>
-                <StatusBadge status={p.status} />
-              </div>
-              <p className="mt-1.5 font-medium leading-snug">
-                {p.pelanggan?.nama ?? "—"}
-              </p>
-              <div className="mt-0.5 flex items-baseline justify-between gap-3">
-                <span className="angka font-mono text-xs text-tinta-3">
-                  {p.pelanggan ? hpCantik(p.pelanggan.no_hp) : ""} ·{" "}
-                  {tanggalPendek(p.created_at)}
-                </span>
-                <span className="angka font-mono text-sm">
-                  {rupiah(p.total)}
-                </span>
-              </div>
+            <li key={p.id}>
+              <Link
+                href={`/order/${p.id}`}
+                className="block px-4 py-3.5 active:bg-kertas"
+              >
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="angka font-mono text-sm font-semibold">
+                    {p.kode}
+                  </span>
+                  <StatusBadge status={p.status} />
+                </div>
+                <p className="mt-1.5 font-medium leading-snug">
+                  {p.pelanggan?.nama ?? "—"}
+                </p>
+                <div className="mt-0.5 flex items-baseline justify-between gap-3">
+                  <span className="angka font-mono text-xs text-tinta-3">
+                    {p.pelanggan ? hpCantik(p.pelanggan.no_hp) : ""} ·{" "}
+                    {tanggalPendek(p.created_at)}
+                  </span>
+                  <span className="angka font-mono text-sm">
+                    {rupiah(p.total)}
+                  </span>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>
