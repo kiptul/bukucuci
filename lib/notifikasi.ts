@@ -17,14 +17,19 @@ export interface TargetNotifikasi {
   noHp: string;
 }
 
+export interface HasilNotifikasi {
+  ok: boolean;
+  alasan: string;
+}
+
 // Kirim satu notifikasi WhatsApp untuk sebuah pesanan.
-// Aman dipanggil berulang: insert ke notifikasi_log dipagari
+// Aman dipanggil berulang: baris log diklaim lebih dulu dan dipagari
 // unique (pesanan_id, jenis), jadi jenis yang sama tidak pernah terkirim dua kali.
 export async function kirimNotifikasi(
   db: SupabaseClient,
   target: TargetNotifikasi,
   jenis: JenisNotifikasi
-): Promise<boolean> {
+): Promise<HasilNotifikasi> {
   const { data: templat } = await db
     .from("template_pesan")
     .select("isi, aktif")
@@ -32,18 +37,30 @@ export async function kirimNotifikasi(
     .eq("jenis", jenis)
     .maybeSingle();
 
-  if (!templat?.aktif) return false;
+  if (!templat) {
+    return { ok: false, alasan: `Template ${jenis} belum dibuat.` };
+  }
+  if (!templat.aktif) {
+    return { ok: false, alasan: `Template ${jenis} sedang dinonaktifkan.` };
+  }
 
   const isi = isiTemplate(templat.isi, { nama: target.nama, kode: target.kode });
 
-  // Klaim slot kirim dulu. Kalau gagal (duplikat), berarti sudah pernah — berhenti.
+  // Klaim slot kirim dulu, baru kirim. Urutannya sengaja begini: kalau dua
+  // proses jalan bersamaan, yang kalah klaim langsung berhenti dan pelanggan
+  // tidak menerima pesan dobel.
   const { error } = await db.from("notifikasi_log").insert({
     pesanan_id: target.pesananId,
     jenis,
     no_tujuan: target.noHp,
     isi,
   });
-  if (error) return false;
+
+  if (error) {
+    return error.code === "23505"
+      ? { ok: false, alasan: `Pesan ${jenis} sudah pernah dikirim.` }
+      : { ok: false, alasan: `Gagal menulis log: ${error.message}` };
+  }
 
   const hasil = await kirimWhatsApp(target.noHp, isi);
 
@@ -56,5 +73,5 @@ export async function kirimNotifikasi(
     .eq("pesanan_id", target.pesananId)
     .eq("jenis", jenis);
 
-  return hasil.ok;
+  return { ok: hasil.ok, alasan: hasil.keterangan };
 }

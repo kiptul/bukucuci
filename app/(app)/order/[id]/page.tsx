@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import StatusBadge from "@/components/StatusBadge";
 import TombolBatal from "@/components/TombolBatal";
+import TombolTesWa from "@/components/TombolTesWa";
 import { getProfil } from "@/lib/profil";
 import { hpCantik, rupiah, tanggalLengkap } from "@/lib/format";
 import type { StatusPesanan } from "@/lib/types";
@@ -39,17 +40,23 @@ export default async function DetailOrder({
   if (!data) notFound();
   const pesanan = data as unknown as Detail;
 
-  const [{ data: item }, { data: riwayat }] = await Promise.all([
-    db
-      .from("pesanan_item")
-      .select("id, nama_layanan, qty, harga_satuan, subtotal")
-      .eq("pesanan_id", id),
-    db
-      .from("riwayat_status")
-      .select("id, status, waktu")
-      .eq("pesanan_id", id)
-      .order("waktu"),
-  ]);
+  const [{ data: item }, { data: riwayat }, { data: notifikasi }] =
+    await Promise.all([
+      db
+        .from("pesanan_item")
+        .select("id, nama_layanan, qty, harga_satuan, subtotal")
+        .eq("pesanan_id", id),
+      db
+        .from("riwayat_status")
+        .select("id, status, waktu")
+        .eq("pesanan_id", id)
+        .order("waktu"),
+      db
+        .from("notifikasi_log")
+        .select("id, jenis, status, keterangan, waktu")
+        .eq("pesanan_id", id)
+        .order("waktu"),
+    ]);
 
   const berikutnya =
     pesanan.status === "MASUK"
@@ -146,6 +153,44 @@ export default async function DetailOrder({
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="px-4 pb-5">
+        <h2 className="mb-3 border-b border-garis pb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-tinta-2">
+          Notifikasi WhatsApp
+        </h2>
+        {!notifikasi?.length ? (
+          <p className="text-sm text-tinta-3">Belum ada pesan terkirim.</p>
+        ) : (
+          <ul className="space-y-2">
+            {notifikasi.map((n) => (
+              <li key={n.id}>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-tinta-2">
+                    {n.jenis}
+                  </span>
+                  <span
+                    className={`font-mono text-[11px] uppercase tracking-wider ${
+                      n.status === "TERKIRIM" ? "text-aksen" : "text-red-800"
+                    }`}
+                  >
+                    {n.status}
+                  </span>
+                </div>
+                <p className="angka font-mono text-[11px] text-tinta-3">
+                  {tanggalLengkap(n.waktu)}
+                  {n.status !== "TERKIRIM" && n.keterangan
+                    ? ` · ${n.keterangan}`
+                    : ""}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-4">
+          <TombolTesWa id={pesanan.id} />
+        </div>
       </section>
 
       {(berikutnya || bisaBatal) && (
