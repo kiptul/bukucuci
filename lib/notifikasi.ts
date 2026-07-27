@@ -57,9 +57,22 @@ export async function kirimNotifikasi(
   });
 
   if (error) {
-    return error.code === "23505"
-      ? { ok: false, alasan: `Pesan ${jenis} sudah pernah dikirim.` }
-      : { ok: false, alasan: `Gagal menulis log: ${error.message}` };
+    if (error.code !== "23505") {
+      return { ok: false, alasan: `Gagal menulis log: ${error.message}` };
+    }
+
+    // Sudah ada barisnya. Yang pernah TERKIRIM tidak boleh dikirim ulang.
+    // Yang GAGAL boleh dicoba lagi — mis. koneksi Fonnte sempat putus.
+    const { data: lama } = await db
+      .from("notifikasi_log")
+      .select("status")
+      .eq("pesanan_id", target.pesananId)
+      .eq("jenis", jenis)
+      .maybeSingle();
+
+    if (lama?.status !== "GAGAL") {
+      return { ok: false, alasan: `Pesan ${jenis} sudah pernah dikirim.` };
+    }
   }
 
   const hasil = await kirimWhatsApp(target.noHp, isi);

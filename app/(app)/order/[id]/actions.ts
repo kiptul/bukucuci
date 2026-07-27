@@ -60,19 +60,37 @@ export async function ubahStatus(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const tujuan = String(formData.get("status") ?? "") as StatusPesanan;
 
-  const { db } = await getProfil();
+  const { db, laundry } = await getProfil();
 
-  const { data: pesanan } = await db
+  const { data } = await db
     .from("pesanan")
-    .select("status")
+    .select("id, kode, status, pelanggan:pelanggan_id(nama, no_hp)")
     .eq("id", id)
     .maybeSingle();
 
+  const pesanan = data as unknown as (PesananKirim & { status: StatusPesanan }) | null;
+
   if (!pesanan) return;
-  if (!LANJUTAN[pesanan.status as StatusPesanan]?.includes(tujuan)) return;
+  if (!LANJUTAN[pesanan.status]?.includes(tujuan)) return;
 
   // Trigger di database yang mencatat riwayat_status — bukan kode ini.
   await db.from("pesanan").update({ status: tujuan }).eq("id", id);
+
+  // Pelanggan dikabari begitu cucian siap. Kalau WhatsApp-nya gagal, status
+  // tetap berubah — kegagalannya tercatat di notifikasi_log, tidak menahan kasir.
+  if (tujuan === "SIAP" && pesanan.pelanggan) {
+    await kirimNotifikasi(
+      db,
+      {
+        pesananId: pesanan.id,
+        laundryId: laundry.id,
+        kode: pesanan.kode,
+        nama: pesanan.pelanggan.nama,
+        noHp: pesanan.pelanggan.no_hp,
+      },
+      "SIAP"
+    );
+  }
 
   revalidatePath(`/order/${id}`);
   revalidatePath("/dashboard");

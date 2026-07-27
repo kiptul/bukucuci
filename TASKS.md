@@ -42,10 +42,10 @@ git add -A && git commit -m "tugas N: <nama tugas>"
 
 ## Tahap 3 — WhatsApp (ini nilai jual produk)
 
-- [ ] **8. Fungsi kirim WhatsApp**
+- [x] **8. Fungsi kirim WhatsApp**
   Buat helper `kirimWA()` yang memanggil API Fonnte, lalu mencatat hasilnya ke `notifikasi_log`. Ambil isi pesan dari `template_pesan`, ganti `{nama}` dan `{kode}`. Selesai kalau: ada tombol tes yang berhasil mengirim 1 pesan ke nomor sendiri, dan barisnya tercatat di `notifikasi_log` dengan status `TERKIRIM`.
 
-- [ ] **9. Kirim otomatis saat status SIAP**
+- [x] **9. Kirim otomatis saat status SIAP**
   Sambungkan perubahan status ke `kirimWA()`. Selesai kalau: klik tombol SIAP → pesan masuk ke HP. Klik dua kali tidak mengirim pesan dobel (dijaga oleh unique constraint).
 
 - [ ] **10. Pesan terima kasih saat DIAMBIL**
