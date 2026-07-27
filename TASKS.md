@@ -48,7 +48,7 @@ git add -A && git commit -m "tugas N: <nama tugas>"
 - [x] **9. Kirim otomatis saat status SIAP**
   Sambungkan perubahan status ke `kirimWA()`. Selesai kalau: klik tombol SIAP → pesan masuk ke HP. Klik dua kali tidak mengirim pesan dobel (dijaga oleh unique constraint).
 
-- [ ] **10. Pesan terima kasih saat DIAMBIL**
+- [x] **10. Pesan terima kasih saat DIAMBIL**
   Sama seperti tugas 9, tapi untuk status `DIAMBIL`. Selesai kalau: pesan terima kasih terkirim dan tercatat di log.
 
 - [ ] **11. Reminder terjadwal H+1, H+3, H+7**

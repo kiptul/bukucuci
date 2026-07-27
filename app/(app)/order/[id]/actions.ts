@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getProfil } from "@/lib/profil";
 import { kirimNotifikasi, type HasilNotifikasi } from "@/lib/notifikasi";
-import type { StatusPesanan } from "@/lib/types";
+import type { JenisNotifikasi, StatusPesanan } from "@/lib/types";
 
 type PesananKirim = {
   id: string;
@@ -56,6 +56,13 @@ const LANJUTAN: Record<StatusPesanan, StatusPesanan[]> = {
   BATAL: [],
 };
 
+// Status yang memicu WhatsApp otomatis, beserta template yang dipakai.
+// BATAL sengaja tidak ada di sini — pelanggan tidak perlu dikabari pembatalan.
+const PESAN_OTOMATIS: Partial<Record<StatusPesanan, JenisNotifikasi>> = {
+  SIAP: "SIAP",
+  DIAMBIL: "TERIMA_KASIH",
+};
+
 export async function ubahStatus(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const tujuan = String(formData.get("status") ?? "") as StatusPesanan;
@@ -76,9 +83,11 @@ export async function ubahStatus(formData: FormData) {
   // Trigger di database yang mencatat riwayat_status — bukan kode ini.
   await db.from("pesanan").update({ status: tujuan }).eq("id", id);
 
-  // Pelanggan dikabari begitu cucian siap. Kalau WhatsApp-nya gagal, status
-  // tetap berubah — kegagalannya tercatat di notifikasi_log, tidak menahan kasir.
-  if (tujuan === "SIAP" && pesanan.pelanggan) {
+  // Pelanggan dikabari saat cucian siap dan saat sudah diambil. Kalau
+  // WhatsApp-nya gagal, status tetap berubah — kegagalannya tercatat di
+  // notifikasi_log dan tidak menahan kasir.
+  const jenis = PESAN_OTOMATIS[tujuan];
+  if (jenis && pesanan.pelanggan) {
     await kirimNotifikasi(
       db,
       {
@@ -88,7 +97,7 @@ export async function ubahStatus(formData: FormData) {
         nama: pesanan.pelanggan.nama,
         noHp: pesanan.pelanggan.no_hp,
       },
-      "SIAP"
+      jenis
     );
   }
 
