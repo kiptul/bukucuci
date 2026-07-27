@@ -23,7 +23,7 @@ git add -A && git commit -m "tugas N: <nama tugas>"
 - [x] **2. Halaman login**
   Email + password via Supabase Auth. Ada middleware yang menjaga sesi dan mengarahkan user belum login ke `/login`. Selesai kalau: bisa login pakai user yang sudah dibuat di Supabase, lalu diarahkan ke `/dashboard`. Logout juga berfungsi.
 
-- [ ] **3. Layout dashboard**
+- [x] **3. Layout dashboard**
   Kerangka halaman setelah login: header (nama laundry + tombol logout) dan navigasi bawah untuk mobile (Order Baru · Daftar Order). Selesai kalau: tampil rapi di layar HP (lebar 375px) tanpa scroll horizontal.
 
 - [ ] **4. Daftar layanan tampil**

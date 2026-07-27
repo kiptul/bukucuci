@@ -1,9 +1,11 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { Laundry } from "@/lib/types";
 
 // Ambil user login + profil laundry-nya. Redirect ke /login kalau belum masuk.
-export async function getProfil() {
+// Dibungkus cache() supaya layout dan page tidak query dua kali dalam satu render.
+export const getProfil = cache(async () => {
   const db = await supabaseServer();
 
   // Sama seperti di proxy.ts: error token dianggap belum login, bukan crash.
@@ -29,4 +31,4 @@ export async function getProfil() {
   }
 
   return { db, user, laundry, namaPengguna: pengguna?.nama ?? user.email ?? "" };
-}
+});
