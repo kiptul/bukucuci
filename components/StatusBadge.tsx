@@ -1,16 +1,17 @@
 import type { StatusPesanan } from "@/lib/types";
 
+// Tampil seperti stempel di nota: kotak, bergaris, huruf kapital monospace
 const gaya: Record<StatusPesanan, string> = {
-  MASUK: "bg-amber-100 text-amber-800",
-  SIAP: "bg-sky-100 text-sky-800",
-  DIAMBIL: "bg-emerald-100 text-emerald-800",
-  BATAL: "bg-slate-200 text-slate-600",
+  MASUK: "border-tinta-2 text-tinta-2",
+  SIAP: "border-aksen bg-aksen-muda text-aksen",
+  DIAMBIL: "border-garis text-tinta-3",
+  BATAL: "border-garis text-tinta-3 line-through",
 };
 
 export default function StatusBadge({ status }: { status: StatusPesanan }) {
   return (
     <span
-      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${gaya[status]}`}
+      className={`inline-block border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${gaya[status]}`}
     >
       {status}
     </span>

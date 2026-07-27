@@ -1,14 +1,35 @@
 @import "tailwindcss";
 
+/* Palet "buku nota": kertas hangat, tinta hitam, satu warna aksen.
+   Sengaja menghindari biru default dan sudut serba bulat. */
+@theme {
+  --color-kertas: #f2efe8;
+  --color-kertas-terang: #fbfaf6;
+  --color-tinta: #17161a;
+  --color-tinta-2: #5c574f;
+  --color-tinta-3: #8a837a;
+  --color-garis: #ddd6c8;
+  --color-aksen: #0b6b5b;
+  --color-aksen-muda: #e3ede9;
+
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
 /* Tanpa dark mode (lihat CLAUDE.md) — paksa skema terang */
 :root {
   color-scheme: light;
 }
 
 html {
-  background: #f1f5f9;
+  background: var(--color-kertas);
 }
 
 body {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Angka rupiah & qty sejajar rapi di kolom */
+.angka {
+  font-variant-numeric: tabular-nums;
 }

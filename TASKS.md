@@ -26,7 +26,7 @@ git add -A && git commit -m "tugas N: <nama tugas>"
 - [x] **3. Layout dashboard**
   Kerangka halaman setelah login: header (nama laundry + tombol logout) dan navigasi bawah untuk mobile (Order Baru · Daftar Order). Selesai kalau: tampil rapi di layar HP (lebar 375px) tanpa scroll horizontal.
 
-- [ ] **4. Daftar layanan tampil**
+- [x] **4. Daftar layanan tampil**
   Tarik data dari tabel `layanan` dan tampilkan. Selesai kalau: 3 layanan contoh muncul di layar setelah login. Ini bukti RLS dan relasi `pengguna → laundry` sudah benar.
 
 ## Tahap 2 — Inti Order
