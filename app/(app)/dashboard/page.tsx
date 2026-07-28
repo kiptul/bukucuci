@@ -124,11 +124,21 @@ export default async function Dashboard({
       </div>
 
       {!pesanan.length ? (
-        <p className="px-4 py-8 text-center text-sm text-tinta-3">
-          {cari || statusAktif !== "SEMUA"
-            ? "Tidak ada order yang cocok."
-            : "Belum ada order."}
-        </p>
+        <div className="px-4 py-10 text-center">
+          {cari || statusAktif !== "SEMUA" ? (
+            <p className="text-sm text-tinta-3">Tidak ada order yang cocok.</p>
+          ) : (
+            <>
+              <p className="text-sm text-tinta-2">Belum ada order tercatat.</p>
+              <Link
+                href="/order/baru"
+                className="mt-4 inline-block bg-tinta px-5 py-3 text-sm font-medium text-kertas active:bg-tinta-2"
+              >
+                Catat order pertama
+              </Link>
+            </>
+          )}
+        </div>
       ) : (
         <ul className="divide-y divide-garis border-t border-garis">
           {pesanan.map((p) => (

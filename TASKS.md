@@ -59,10 +59,10 @@ git add -A && git commit -m "tugas N: <nama tugas>"
 - [x] **12. Mode berdampingan**
   Di form order, ada opsi "Order lama dari buku": bisa mengisi tanggal masuk secara manual dan menandai `sumber = 'DARI_BUKU'`. Di daftar order, order seperti ini diberi penanda visual. Selesai kalau: bisa memasukkan order lama bertanggal mundur, dan penandanya terlihat jelas di daftar. Ini fitur pembeda utama, jangan dilewat.
 
-- [ ] **13. PWA**
+- [x] **13. PWA**
   Tambahkan `manifest.json`, ikon, meta tag, dan service worker minimal. Selesai kalau: di Chrome Android muncul opsi "Add to Home Screen", dan saat dibuka tampil layar penuh tanpa address bar.
 
-- [ ] **14. Data demo + rapikan tampilan**
+- [x] **14. Data demo + rapikan tampilan**
   Isi 8-10 order contoh dengan status beragam dan tanggal yang masuk akal. Rapikan spasi, ukuran font, dan status kosong. Selesai kalau: aplikasi terlihat seperti sudah dipakai beberapa hari, siap direkam untuk video demo.
 
 ## Catatan

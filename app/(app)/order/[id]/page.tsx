@@ -195,9 +195,14 @@ export default async function DetailOrder({
           </ul>
         )}
 
-        <div className="mt-4">
-          <TombolTesWa id={pesanan.id} />
-        </div>
+        {/* Hanya tampil kalau masih ada gunanya: order belum selesai, atau ada
+            pesan yang gagal dan perlu dikirim ulang. Di order yang sudah
+            beres dan semua pesannya terkirim, tombol ini cuma jadi gangguan. */}
+        {(berikutnya || notifikasi?.some((n) => n.status === "GAGAL")) && (
+          <div className="mt-4">
+            <TombolTesWa id={pesanan.id} />
+          </div>
+        )}
       </section>
 
       {(berikutnya || bisaBatal) && (
