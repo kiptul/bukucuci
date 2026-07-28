@@ -70,8 +70,10 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Semua rute kecuali aset statis, manifest/SW/ikon (dibutuhkan PWA sebelum
-    // login), dan endpoint cron (punya otentikasi sendiri lewat CRON_SECRET).
-    "/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|icons/|api/cron/).*)",
+    // Semua rute kecuali aset statis, berkas PWA (manifest, service worker,
+    // ikon, halaman offline — semuanya harus terbaca sebelum login supaya
+    // Chrome mau memasang aplikasi), dan endpoint cron yang punya otentikasi
+    // sendiri lewat CRON_SECRET.
+    "/((?!_next/static|_next/image|favicon.ico|sw.js|offline.html|manifest.webmanifest|icons/|api/cron/).*)",
   ],
 };
