@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import StatusBadge from "@/components/StatusBadge";
 import TombolAksi from "@/components/TombolAksi";
 import TombolBatal from "@/components/TombolBatal";
-import TombolTesWa from "@/components/TombolTesWa";
+import TombolKirimUlang from "@/components/TombolKirimUlang";
 import { getProfil } from "@/lib/profil";
 import { hpCantik, rupiah, tanggalLengkap } from "@/lib/format";
 import TandaBuku from "@/components/TandaBuku";
@@ -218,12 +218,15 @@ export default async function DetailOrder({
           </ul>
         )}
 
-        {/* Hanya tampil kalau masih ada gunanya: order belum selesai, atau ada
-            pesan yang gagal dan perlu dikirim ulang. Di order yang sudah
-            beres dan semua pesannya terkirim, tombol ini cuma jadi gangguan. */}
-        {(berikutnya || notifikasi?.some((n) => n.status === "GAGAL")) && (
+        {/* Sejak pengiriman berjalan otomatis saat status berubah, tombol ini
+            hanya berguna untuk satu hal: mengulang pesan yang gagal terkirim.
+            Sengaja disembunyikan di luar keadaan itu — di order berstatus MASUK
+            ia akan mengirim kabar "cucian sudah siap" padahal belum, sekaligus
+            memakai jatah pesan SIAP sehingga pengiriman otomatis nanti ditolak
+            sebagai duplikat. */}
+        {notifikasi?.some((n) => n.status === "GAGAL") && (
           <div className="mt-4">
-            <TombolTesWa id={pesanan.id} />
+            <TombolKirimUlang id={pesanan.id} />
           </div>
         )}
       </section>

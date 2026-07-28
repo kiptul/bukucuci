@@ -11,9 +11,10 @@ type PesananKirim = {
   pelanggan: { nama: string; no_hp: string } | null;
 };
 
-// Tombol tes di halaman detail: kirim template SIAP ke nomor pelanggan.
-// Di Tugas 9 pemanggilan yang sama akan dijalankan otomatis saat status berubah.
-export async function tesKirimWa(
+// Kirim ulang pesan yang gagal terkirim — mis. koneksi ke Fonnte sempat putus.
+// Yang diulang adalah jenis yang benar-benar tercatat GAGAL, bukan jenis tetap:
+// order yang gagal di tahap TERIMA_KASIH tidak boleh malah dikirimi kabar SIAP.
+export async function kirimUlangWa(
   _prev: HasilNotifikasi | null,
   formData: FormData
 ): Promise<HasilNotifikasi> {
@@ -31,20 +32,38 @@ export async function tesKirimWa(
     return { ok: false, alasan: "Order atau pelanggannya tidak ditemukan." };
   }
 
-  const hasil = await kirimNotifikasi(
-    db,
-    {
-      pesananId: pesanan.id,
-      laundryId: laundry.id,
-      kode: pesanan.kode,
-      nama: pesanan.pelanggan.nama,
-      noHp: pesanan.pelanggan.no_hp,
-    },
-    "SIAP"
-  );
+  const { data: gagal } = await db
+    .from("notifikasi_log")
+    .select("jenis")
+    .eq("pesanan_id", id)
+    .eq("status", "GAGAL");
+
+  if (!gagal?.length) {
+    return { ok: false, alasan: "Tidak ada pesan yang perlu dikirim ulang." };
+  }
+
+  const target = {
+    pesananId: pesanan.id,
+    laundryId: laundry.id,
+    kode: pesanan.kode,
+    nama: pesanan.pelanggan.nama,
+    noHp: pesanan.pelanggan.no_hp,
+  };
+
+  let berhasil = 0;
+  let alasanTerakhir = "";
+
+  for (const g of gagal) {
+    const hasil = await kirimNotifikasi(db, target, g.jenis as JenisNotifikasi);
+    if (hasil.ok) berhasil++;
+    else alasanTerakhir = hasil.alasan;
+  }
 
   revalidatePath(`/order/${id}`);
-  return hasil;
+
+  return berhasil
+    ? { ok: true, alasan: `${berhasil} pesan dikirim ulang.` }
+    : { ok: false, alasan: alasanTerakhir || "Masih gagal terkirim." };
 }
 
 // Status hanya boleh maju satu arah. Tanpa aturan ini, order yang sudah

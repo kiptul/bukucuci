@@ -1,17 +1,18 @@
 "use client";
 
 import { useActionState } from "react";
-import { tesKirimWa } from "@/app/(app)/order/[id]/actions";
+import { kirimUlangWa } from "@/app/(app)/order/[id]/actions";
 import TombolAksi from "@/components/TombolAksi";
 
-export default function TombolTesWa({ id }: { id: string }) {
-  const [hasil, aksi] = useActionState(tesKirimWa, null);
+// Muncul hanya kalau ada pesan berstatus GAGAL di order ini.
+export default function TombolKirimUlang({ id }: { id: string }) {
+  const [hasil, aksi] = useActionState(kirimUlangWa, null);
 
   return (
     <form action={aksi}>
       <input type="hidden" name="id" value={id} />
-      <TombolAksi gaya="garis" saatMenunggu="Mengirim WhatsApp...">
-        Tes kirim WhatsApp
+      <TombolAksi gaya="garis" saatMenunggu="Mengirim ulang...">
+        Kirim ulang pesan yang gagal
       </TombolAksi>
 
       {hasil && (
