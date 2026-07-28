@@ -16,7 +16,7 @@ export default function NavSamping({ judul }: { judul: string }) {
     <aside className="hidden shrink-0 flex-col border-r border-garis bg-kertas md:flex md:w-64">
       <div className="px-6 pb-7 pt-7">
         <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-tinta-3">
-          BukuCuci
+          Kelar
         </p>
         <p className="mt-2.5 text-[17px] font-semibold leading-snug tracking-tight">
           {judul}

@@ -7,7 +7,7 @@ export default function Header({ judul }: { judul: string }) {
       <div className="flex items-center justify-between gap-3 px-4 py-3.5">
         <div className="min-w-0">
           <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-kertas/40">
-            BukuCuci
+            Kelar
           </p>
           <h1 className="truncate text-[17px] font-semibold leading-tight tracking-tight">
             {judul}

@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "BukuCuci",
-    short_name: "BukuCuci",
+    name: "Kelar",
+    short_name: "Kelar",
     description:
       "Buku nota digital untuk laundry — catat order, kabari pelanggan lewat WhatsApp otomatis.",
     // id dan scope ditulis tegas supaya Chrome mengenali ini sebagai satu

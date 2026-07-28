@@ -1,4 +1,4 @@
-# BukuCuci
+# Kelar
 
 Aplikasi pencatatan order laundry + notifikasi WhatsApp otomatis.
 
@@ -24,7 +24,7 @@ Riset lapangan 14 laundry di Karawang:
 - Kompetitor (CuciQu, Kasirco, dll) semua pakai model langganan + minta pemilik
   mengubah seluruh cara kerja sekaligus
 
-Maka posisi BukuCuci: **mengganti buku nota, bukan mengganti seluruh sistem.**
+Maka posisi Kelar: **mengganti buku nota, bukan mengganti seluruh sistem.**
 Referensi model: Khatabook (India) & BukuWarung (Indonesia).
 
 Konsekuensi ke produk:

@@ -17,13 +17,13 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BukuCuci",
+  title: "Kelar",
   description:
     "Buku nota digital untuk laundry — catat order, kabari pelanggan lewat WhatsApp otomatis.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "BukuCuci",
+    title: "Kelar",
     statusBarStyle: "default",
   },
 };

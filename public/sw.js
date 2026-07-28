@@ -1,4 +1,4 @@
-// Service worker BukuCuci.
+// Service worker Kelar.
 //
 // Tugasnya cuma satu: menjadikan aplikasi bisa dipasang ke home screen.
 // Chrome mensyaratkan service worker yang benar-benar sanggup membalas saat
@@ -8,7 +8,7 @@
 // Data order sendiri tidak di-cache: aplikasi tetap butuh Supabase, dan
 // menyajikan daftar order basi dari cache lebih berbahaya daripada berguna.
 
-const CACHE = "bukucuci-v1";
+const CACHE = "kelar-v1";
 const HALAMAN_OFFLINE = "/offline.html";
 
 self.addEventListener("install", (event) => {

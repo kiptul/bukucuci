@@ -24,7 +24,7 @@ export default async function HalamanLogin({
           seperti halaman HP yang dipaksa melebar. */}
       <section className="flex flex-col justify-center px-6 pt-16 md:bg-tinta md:px-14 md:pt-0 md:text-kertas">
         <p className="font-mono text-[10px] uppercase tracking-[0.34em] text-tinta-3 md:text-kertas/45">
-          BukuCuci
+          Kelar
         </p>
         <h1 className="mt-3.5 text-[34px] font-bold leading-[1.06] tracking-[-0.025em] md:text-[42px]">
           Buku nota
