@@ -140,9 +140,12 @@ export default async function Dashboard({
           )}
         </div>
       ) : (
-        <ul className="divide-y divide-garis border-t border-garis">
+        <ul className="border-t border-garis md:grid md:grid-cols-2">
           {pesanan.map((p) => (
-            <li key={p.id}>
+            <li
+              key={p.id}
+              className="border-b border-garis md:odd:border-r"
+            >
               <Link
                 href={`/order/${p.id}`}
                 className="block px-4 py-3.5 active:bg-kertas"

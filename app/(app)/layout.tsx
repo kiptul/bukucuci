@@ -1,8 +1,11 @@
 import Header from "@/components/Header";
 import NavBawah from "@/components/NavBawah";
+import NavSamping from "@/components/NavSamping";
 import { getProfil } from "@/lib/profil";
 
-// Kerangka semua halaman setelah login: header di atas, navigasi di bawah.
+// Kerangka semua halaman setelah login.
+// HP: header di atas, navigasi menempel di dasar layar.
+// Layar besar: navigasi pindah ke samping kiri, isi halaman melebar.
 export default async function LayoutApl({
   children,
 }: {
@@ -11,10 +14,17 @@ export default async function LayoutApl({
   const { laundry } = await getProfil();
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <Header judul={laundry.nama} />
-      {/* pb menyisakan ruang untuk navigasi bawah yang posisinya fixed */}
-      <main className="flex-1 pb-24">{children}</main>
+    <div className="min-h-dvh md:flex">
+      <NavSamping />
+
+      <div className="flex min-h-dvh w-full min-w-0 flex-col bg-kertas-terang">
+        <Header judul={laundry.nama} />
+        {/* pb besar di HP menyisakan ruang untuk navigasi bawah yang fixed */}
+        <main className="mx-auto w-full max-w-md flex-1 pb-24 md:max-w-4xl md:pb-10">
+          {children}
+        </main>
+      </div>
+
       <NavBawah />
     </div>
   );

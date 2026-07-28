@@ -70,7 +70,7 @@ export default async function DetailOrder({
   const bisaBatal = pesanan.status === "MASUK" || pesanan.status === "SIAP";
 
   return (
-    <div>
+    <div className="md:mx-auto md:max-w-2xl">
       <div className="border-b border-garis px-4 py-3">
         <Link
           href="/dashboard"

@@ -12,7 +12,7 @@ export default async function HalamanLogin({
       : undefined;
 
   return (
-    <main className="flex min-h-dvh flex-col px-6 pb-10 pt-20">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-10 pt-20 md:justify-center md:pt-10">
       <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-tinta-3">
         BukuCuci
       </p>

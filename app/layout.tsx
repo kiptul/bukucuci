@@ -40,10 +40,8 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${plexSans.variable} ${plexMono.variable}`}>
       <body className="min-h-dvh bg-kertas font-sans text-tinta antialiased">
-        {/* Dibuat selebar HP; di desktop tampil sebagai kolom di tengah */}
-        <div className="mx-auto min-h-dvh w-full max-w-md bg-kertas-terang">
-          {children}
-        </div>
+        {/* Lebar diatur per-halaman: HP satu kolom, layar besar melebar. */}
+        {children}
         <DaftarkanSW />
       </body>
     </html>

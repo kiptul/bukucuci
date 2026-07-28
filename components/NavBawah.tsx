@@ -2,37 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MENU, menuAktif } from "@/components/menu";
 
-const menu = [
-  {
-    href: "/order/baru",
-    label: "Order Baru",
-    ikon: (
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
-    ),
-  },
-  {
-    href: "/dashboard",
-    label: "Daftar Order",
-    ikon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4 6h16M4 12h16M4 18h10"
-      />
-    ),
-  },
-];
-
+// Navigasi untuk HP. Di layar besar digantikan NavSamping.
 export default function NavBawah() {
   const path = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-garis bg-kertas-terang pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-garis bg-kertas-terang pb-[env(safe-area-inset-bottom)] md:hidden">
       <ul className="flex">
-        {menu.map((m) => {
-          // /dashboard cocok juga untuk halaman detail order di bawahnya
-          const aktif = path === m.href || path.startsWith(m.href + "/");
+        {MENU.map((m) => {
+          const aktif = menuAktif(path, m.href);
           return (
             <li key={m.href} className="flex-1">
               <Link
