@@ -8,8 +8,10 @@ export default function manifest(): MetadataRoute.Manifest {
       "Buku nota digital untuk laundry — catat order, kabari pelanggan lewat WhatsApp otomatis.",
     start_url: "/",
     display: "standalone",
-    background_color: "#f1f5f9",
-    theme_color: "#0284c7",
+    // Samakan dengan palet aplikasi: kertas untuk layar splash, tinta untuk
+    // bilah status — kalau beda, aplikasi berkedip warna lain saat dibuka.
+    background_color: "#f2efe8",
+    theme_color: "#17161a",
     icons: [
       {
         src: "/icons/icon-192.png",
