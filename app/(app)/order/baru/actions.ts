@@ -24,15 +24,26 @@ export async function cariPelanggan(
 }
 
 // Kode order: tanggal Jakarta + nomor urut hari itu, mis. 2707-03.
-function prefixKode(): string {
+function prefixKode(tanggal: Date): string {
   const bagian = new Intl.DateTimeFormat("id-ID", {
     timeZone: "Asia/Jakarta",
     day: "2-digit",
     month: "2-digit",
-  }).formatToParts(new Date());
+  }).formatToParts(tanggal);
   const hari = bagian.find((b) => b.type === "day")?.value ?? "00";
   const bulan = bagian.find((b) => b.type === "month")?.value ?? "00";
   return `${hari}${bulan}`;
+}
+
+// Tanggal dari <input type="date"> ("2026-07-20") jadi timestamp siang WIB.
+// Dipatok siang supaya pergeseran zona waktu tidak melemparkannya ke hari lain.
+function tanggalBuku(teks: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(teks)) return null;
+  const waktu = new Date(`${teks}T12:00:00+07:00`);
+  if (Number.isNaN(waktu.getTime())) return null;
+  // Order dari buku selalu masa lalu. Beri toleransi sehari untuk beda jam.
+  if (waktu.getTime() > Date.now() + 86_400_000) return null;
+  return waktu;
 }
 
 export async function simpanOrder(
@@ -47,6 +58,16 @@ export async function simpanOrder(
 
   if (hp.length < 10) {
     return { error: "Nomor HP belum lengkap." };
+  }
+
+  // Mode berdampingan: order lama yang disalin dari buku nota kertas.
+  const dariBuku = formData.get("dari_buku") === "on";
+  const tanggalMasuk = dariBuku
+    ? tanggalBuku(String(formData.get("tanggal") ?? ""))
+    : null;
+
+  if (dariBuku && !tanggalMasuk) {
+    return { error: "Tanggal order lama belum benar." };
   }
 
   // Harga diambil ulang dari database — jangan percaya angka dari browser.
@@ -98,7 +119,9 @@ export async function simpanOrder(
   }
 
   const total = item.reduce((n, i) => n + i.subtotal, 0);
-  const prefix = prefixKode();
+  // Order dari buku dapat kode bertanggal hari asalnya, bukan hari diinput,
+  // supaya nomornya nyambung dengan catatan di buku kertas.
+  const prefix = prefixKode(tanggalMasuk ?? new Date());
 
   // Nomor urut bisa bentrok kalau dua kasir menyimpan bersamaan.
   // Kalau kena unique (laundry_id, kode), coba nomor berikutnya.
@@ -122,6 +145,8 @@ export async function simpanOrder(
         subtotal: total,
         total,
         catatan: catatan || null,
+        sumber: dariBuku ? "DARI_BUKU" : "BARU",
+        ...(tanggalMasuk && { created_at: tanggalMasuk.toISOString() }),
       })
       .select("id")
       .single();
@@ -144,6 +169,17 @@ export async function simpanOrder(
     // Jangan tinggalkan order kosong tanpa rincian.
     await db.from("pesanan").delete().eq("id", pesananId);
     return { error: "Gagal menyimpan rincian layanan." };
+  }
+
+  // Trigger menulis riwayat MASUK dengan waktu sekarang. Untuk order dari buku,
+  // waktunya diselaraskan dengan tanggal aslinya supaya tidak bertentangan
+  // dengan tanggal order yang tampil di layar.
+  if (tanggalMasuk) {
+    await db
+      .from("riwayat_status")
+      .update({ waktu: tanggalMasuk.toISOString() })
+      .eq("pesanan_id", pesananId)
+      .eq("status", "MASUK");
   }
 
   redirect("/dashboard");

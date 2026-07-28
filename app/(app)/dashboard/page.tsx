@@ -1,8 +1,9 @@
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
+import TandaBuku from "@/components/TandaBuku";
 import { getProfil } from "@/lib/profil";
 import { hpCantik, normalisasiHp, rupiah, tanggalPendek } from "@/lib/format";
-import type { StatusPesanan } from "@/lib/types";
+import type { StatusPesanan, SumberPesanan } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ type BarisPesanan = {
   kode: string;
   total: number;
   status: StatusPesanan;
+  sumber: SumberPesanan;
   created_at: string;
   pelanggan: { nama: string; no_hp: string } | null;
 };
@@ -39,7 +41,7 @@ export default async function Dashboard({
   let kueri = db
     .from("pesanan")
     .select(
-      "id, kode, total, status, created_at, pelanggan:pelanggan_id(nama, no_hp)",
+      "id, kode, total, status, sumber, created_at, pelanggan:pelanggan_id(nama, no_hp)",
     )
     .order("created_at", { ascending: false })
     .limit(50);
@@ -136,8 +138,11 @@ export default async function Dashboard({
                 className="block px-4 py-3.5 active:bg-kertas"
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="angka font-mono text-sm font-semibold">
-                    {p.kode}
+                  <span className="flex items-baseline gap-2">
+                    <span className="angka font-mono text-sm font-semibold">
+                      {p.kode}
+                    </span>
+                    {p.sumber === "DARI_BUKU" && <TandaBuku />}
                   </span>
                   <StatusBadge status={p.status} />
                 </div>

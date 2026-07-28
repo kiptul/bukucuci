@@ -56,7 +56,7 @@ git add -A && git commit -m "tugas N: <nama tugas>"
 
 ## Tahap 4 — Pembeda & Finishing
 
-- [ ] **12. Mode berdampingan**
+- [x] **12. Mode berdampingan**
   Di form order, ada opsi "Order lama dari buku": bisa mengisi tanggal masuk secara manual dan menandai `sumber = 'DARI_BUKU'`. Di daftar order, order seperti ini diberi penanda visual. Selesai kalau: bisa memasukkan order lama bertanggal mundur, dan penandanya terlihat jelas di daftar. Ini fitur pembeda utama, jangan dilewat.
 
 - [ ] **13. PWA**

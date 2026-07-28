@@ -17,6 +17,13 @@ const gayaInput =
 const gayaLabel =
   "mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-tinta-2";
 
+// Tanggal hari ini menurut WIB, untuk batas atas input tanggal.
+function hariIniJakarta(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+  }).format(new Date());
+}
+
 type StatusPelanggan = "kosong" | "mencari" | "terdaftar" | "baru";
 
 export default function FormOrder({ layanan }: { layanan: Layanan[] }) {
@@ -25,6 +32,8 @@ export default function FormOrder({ layanan }: { layanan: Layanan[] }) {
   const [noHp, setNoHp] = useState("");
   const [namaKetik, setNamaKetik] = useState("");
   const [qty, setQty] = useState<Record<string, string>>({});
+  const [dariBuku, setDariBuku] = useState(false);
+  const hariIni = hariIniJakarta();
   // Hasil pencarian disimpan bersama nomor yang dicari, supaya status bisa
   // diturunkan dari state — bukan di-set dari dalam effect.
   const [hasil, setHasil] = useState<{
@@ -72,6 +81,45 @@ export default function FormOrder({ layanan }: { layanan: Layanan[] }) {
 
   return (
     <form action={aksi} className="pb-4">
+      {/* Mode berdampingan: pemilik boleh tetap pakai buku, order lamanya
+          disalin ke sini belakangan tanpa kehilangan tanggal aslinya. */}
+      <section className="border-b border-garis bg-kertas px-4 py-4">
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            name="dari_buku"
+            checked={dariBuku}
+            onChange={(e) => setDariBuku(e.target.checked)}
+            className="mt-0.5 h-5 w-5 shrink-0 accent-[#0b6b5b]"
+          />
+          <span>
+            <span className="block font-medium leading-snug">
+              Order lama dari buku
+            </span>
+            <span className="mt-0.5 block text-xs leading-relaxed text-tinta-2">
+              Untuk menyalin catatan yang sudah terlanjur ditulis di buku nota.
+            </span>
+          </span>
+        </label>
+
+        {dariBuku && (
+          <div className="mt-4">
+            <label htmlFor="tanggal" className={gayaLabel}>
+              Tanggal masuk · sesuai buku
+            </label>
+            <input
+              id="tanggal"
+              name="tanggal"
+              type="date"
+              required
+              max={hariIni}
+              defaultValue={hariIni}
+              className={`${gayaInput} angka font-mono`}
+            />
+          </div>
+        )}
+      </section>
+
       <section className="px-4 py-5">
         <h2 className="mb-4 border-b border-garis pb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-tinta-2">
           1 · Pelanggan

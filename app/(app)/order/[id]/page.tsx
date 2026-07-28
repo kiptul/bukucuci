@@ -5,7 +5,8 @@ import TombolBatal from "@/components/TombolBatal";
 import TombolTesWa from "@/components/TombolTesWa";
 import { getProfil } from "@/lib/profil";
 import { hpCantik, rupiah, tanggalLengkap } from "@/lib/format";
-import type { StatusPesanan } from "@/lib/types";
+import TandaBuku from "@/components/TandaBuku";
+import type { StatusPesanan, SumberPesanan } from "@/lib/types";
 import { ubahStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ type Detail = {
   subtotal: number;
   total: number;
   status: StatusPesanan;
+  sumber: SumberPesanan;
   catatan: string | null;
   created_at: string;
   pelanggan: { nama: string; no_hp: string } | null;
@@ -32,7 +34,7 @@ export default async function DetailOrder({
   const { data } = await db
     .from("pesanan")
     .select(
-      "id, kode, subtotal, total, status, catatan, created_at, pelanggan:pelanggan_id(nama, no_hp)"
+      "id, kode, subtotal, total, status, sumber, catatan, created_at, pelanggan:pelanggan_id(nama, no_hp)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -87,6 +89,11 @@ export default async function DetailOrder({
             <p className="mt-1 font-mono text-[11px] text-tinta-3">
               {tanggalLengkap(pesanan.created_at)}
             </p>
+            {pesanan.sumber === "DARI_BUKU" && (
+              <div className="mt-2">
+                <TandaBuku />
+              </div>
+            )}
           </div>
           <StatusBadge status={pesanan.status} />
         </div>
