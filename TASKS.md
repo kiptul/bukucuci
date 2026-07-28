@@ -51,7 +51,7 @@ git add -A && git commit -m "tugas N: <nama tugas>"
 - [x] **10. Pesan terima kasih saat DIAMBIL**
   Sama seperti tugas 9, tapi untuk status `DIAMBIL`. Selesai kalau: pesan terima kasih terkirim dan tercatat di log.
 
-- [ ] **11. Reminder terjadwal H+1, H+3, H+7**
+- [x] **11. Reminder terjadwal H+1, H+3, H+7**
   Buat route yang bisa dipanggil cron: cari order berstatus `SIAP` yang waktunya sudah lewat 1/3/7 hari (baca dari `riwayat_status`), lalu kirim reminder yang belum pernah dikirim. Selesai kalau: route bisa dipanggil manual dan mengirim reminder yang tepat. Dipanggil dua kali tidak mengirim dobel. Setelah itu daftarkan di `vercel.json` sebagai cron harian.
 
 ## Tahap 4 — Pembeda & Finishing
