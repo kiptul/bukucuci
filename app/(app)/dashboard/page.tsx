@@ -1,6 +1,6 @@
 import Link from "next/link";
 import KontrolDaftar from "@/components/KontrolDaftar";
-import StatusBadge from "@/components/StatusBadge";
+import StatusBadge, { pitaStatus } from "@/components/StatusBadge";
 import TandaBuku from "@/components/TandaBuku";
 import { getProfil } from "@/lib/profil";
 import { hpCantik, normalisasiHp, rupiah, tanggalPendek } from "@/lib/format";
@@ -115,8 +115,12 @@ export default async function Dashboard({
               <li key={p.id} className="border-b border-garis md:odd:border-r">
                 <Link
                   href={`/order/${p.id}`}
-                  className="baris block px-4 py-4 transition-colors hover:bg-kertas active:bg-kertas md:px-6"
+                  className="baris relative block px-4 py-4 pl-5 transition-colors hover:bg-white active:bg-white md:px-6 md:pl-7"
                 >
+                  <span
+                    className={`absolute left-0 top-0 h-full w-[3px] ${pitaStatus[p.status]}`}
+                    aria-hidden="true"
+                  />
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="flex items-baseline gap-2">
                       <span className="angka font-mono text-sm font-semibold">

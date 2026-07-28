@@ -2,10 +2,19 @@ import type { StatusPesanan } from "@/lib/types";
 
 // Tampil seperti stempel di nota: kotak, bergaris, huruf kapital monospace
 const gaya: Record<StatusPesanan, string> = {
-  MASUK: "border-tinta-2 text-tinta-2",
+  MASUK: "border-tinta-2 bg-white text-tinta-2",
   SIAP: "border-aksen bg-aksen-muda text-aksen",
-  DIAMBIL: "border-garis text-tinta-3",
-  BATAL: "border-garis text-tinta-3 line-through",
+  DIAMBIL: "border-garis bg-white text-tinta-3",
+  BATAL: "border-garis bg-white text-tinta-3 line-through",
+};
+
+// Pita tipis di tepi baris daftar. Warnanya memberi irama pada daftar panjang
+// sehingga status terbaca sekilas tanpa harus membaca stempelnya.
+export const pitaStatus: Record<StatusPesanan, string> = {
+  MASUK: "bg-tinta-2",
+  SIAP: "bg-aksen",
+  DIAMBIL: "bg-garis",
+  BATAL: "bg-garis",
 };
 
 export default function StatusBadge({ status }: { status: StatusPesanan }) {

@@ -81,7 +81,10 @@ export default function FormOrder({ layanan }: { layanan: Layanan[] }) {
   const jumlahItem = layanan.filter((l) => keAngka(qty[l.id] ?? "") > 0).length;
 
   return (
-    <form action={aksi} className="pb-4 md:mx-auto md:max-w-xl">
+    <form
+      action={aksi}
+      className="pb-4 md:mx-auto md:max-w-xl md:border md:border-garis md:bg-white md:pb-0 md:shadow-[0_24px_50px_-40px_rgba(0,0,0,0.55)]"
+    >
       {/* Mode berdampingan: pemilik boleh tetap pakai buku, order lamanya
           disalin ke sini belakangan tanpa kehilangan tanggal aslinya. */}
       <section className="border-b border-garis bg-kertas px-4 py-4">

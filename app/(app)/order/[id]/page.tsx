@@ -164,78 +164,82 @@ export default async function DetailOrder({
         <div className="tepi-sobek" aria-hidden="true" />
       </section>
 
-      <section className="px-4 pb-5">
-        <h2 className="mb-3 border-b border-garis pb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-tinta-2">
-          Riwayat
-        </h2>
-        <ul className="space-y-2">
-          {(riwayat ?? []).map((r) => (
-            <li
-              key={r.id}
-              className="flex items-baseline justify-between gap-3"
-            >
-              <span className="font-mono text-[11px] uppercase tracking-wider text-tinta-2">
-                {r.status}
-              </span>
-              <span className="angka font-mono text-[11px] text-tinta-3">
-                {tanggalLengkap(r.waktu)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="px-4 pb-5">
-        <h2 className="mb-3 border-b border-garis pb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-tinta-2">
-          Notifikasi WhatsApp
-        </h2>
-        {!notifikasi?.length ? (
-          <p className="text-sm text-tinta-3">Belum ada pesan terkirim.</p>
-        ) : (
+      <section className="px-4 pb-4 pt-5 md:px-6">
+        <div className="border border-garis bg-white px-5 py-4">
+          <h2 className="mb-3 border-b border-garis pb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-tinta-2">
+            Riwayat
+          </h2>
           <ul className="space-y-2">
-            {notifikasi.map((n) => (
-              <li key={n.id}>
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-tinta-2">
-                    {n.jenis}
-                  </span>
-                  <span
-                    className={`font-mono text-[11px] uppercase tracking-wider ${
-                      n.status === "TERKIRIM" ? "text-aksen" : "text-red-800"
-                    }`}
-                  >
-                    {n.status}
-                  </span>
-                </div>
-                <p className="angka font-mono text-[11px] text-tinta-3">
-                  {tanggalLengkap(n.waktu)}
-                  {n.status !== "TERKIRIM" && n.keterangan
-                    ? ` · ${n.keterangan}`
-                    : ""}
-                </p>
+            {(riwayat ?? []).map((r) => (
+              <li
+                key={r.id}
+                className="flex items-baseline justify-between gap-3"
+              >
+                <span className="font-mono text-[11px] uppercase tracking-wider text-tinta-2">
+                  {r.status}
+                </span>
+                <span className="angka font-mono text-[11px] text-tinta-3">
+                  {tanggalLengkap(r.waktu)}
+                </span>
               </li>
             ))}
           </ul>
-        )}
+        </div>
+      </section>
 
-        {/* Sejak pengiriman berjalan otomatis saat status berubah, tombol ini
+      <section className="px-4 pb-5 md:px-6">
+        <div className="border border-garis bg-white px-5 py-4">
+          <h2 className="mb-3 border-b border-garis pb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-tinta-2">
+            Notifikasi WhatsApp
+          </h2>
+          {!notifikasi?.length ? (
+            <p className="text-sm text-tinta-3">Belum ada pesan terkirim.</p>
+          ) : (
+            <ul className="space-y-2">
+              {notifikasi.map((n) => (
+                <li key={n.id}>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-mono text-[11px] uppercase tracking-wider text-tinta-2">
+                      {n.jenis}
+                    </span>
+                    <span
+                      className={`font-mono text-[11px] uppercase tracking-wider ${
+                        n.status === "TERKIRIM" ? "text-aksen" : "text-red-800"
+                      }`}
+                    >
+                      {n.status}
+                    </span>
+                  </div>
+                  <p className="angka font-mono text-[11px] text-tinta-3">
+                    {tanggalLengkap(n.waktu)}
+                    {n.status !== "TERKIRIM" && n.keterangan
+                      ? ` · ${n.keterangan}`
+                      : ""}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Sejak pengiriman berjalan otomatis saat status berubah, tombol ini
             hanya berguna untuk satu hal: mengulang pesan yang gagal terkirim.
             Sengaja disembunyikan di luar keadaan itu — di order berstatus MASUK
             ia akan mengirim kabar "cucian sudah siap" padahal belum, sekaligus
             memakai jatah pesan SIAP sehingga pengiriman otomatis nanti ditolak
             sebagai duplikat. */}
-        {notifikasi?.some((n) => n.status === "GAGAL") && (
-          <div className="mt-4">
-            <TombolKirimUlang id={pesanan.id} />
-          </div>
-        )}
+          {notifikasi?.some((n) => n.status === "GAGAL") && (
+            <div className="mt-4">
+              <TombolKirimUlang id={pesanan.id} />
+            </div>
+          )}
+        </div>
       </section>
 
       {(berikutnya || bisaBatal) && (
         // Dua form terpisah, bukan satu form dua tombol: dengan begitu tiap
         // tombol punya status menunggunya sendiri dan hanya yang ditekan
         // yang berputar.
-        <div className="space-y-2 border-t border-garis px-4 py-5">
+        <div className="space-y-2 px-4 pb-5 md:px-6">
           {berikutnya && (
             <form action={ubahStatus}>
               <input type="hidden" name="id" value={pesanan.id} />

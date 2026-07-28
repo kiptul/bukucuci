@@ -15,12 +15,12 @@ export default async function LayoutApl({
 
   return (
     <div className="min-h-dvh md:flex">
-      <NavSamping />
+      <NavSamping judul={laundry.nama} />
 
       <div className="flex min-h-dvh w-full min-w-0 flex-col bg-kertas-terang">
         <Header judul={laundry.nama} />
         {/* pb besar di HP menyisakan ruang untuk navigasi bawah yang fixed */}
-        <main className="muncul mx-auto w-full max-w-md flex-1 pb-24 md:max-w-4xl md:pb-10">
+        <main className="muncul mx-auto w-full max-w-md flex-1 pb-24 md:max-w-3xl md:pb-14 md:pt-8">
           {children}
         </main>
       </div>

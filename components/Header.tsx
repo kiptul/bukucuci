@@ -2,13 +2,14 @@ import { keluar } from "@/app/login/actions";
 
 export default function Header({ judul }: { judul: string }) {
   return (
-    <header className="sticky top-0 z-20 bg-tinta text-kertas shadow-[0_1px_0_rgba(0,0,0,0.06),0_8px_24px_-16px_rgba(0,0,0,0.5)]">
-      <div className="flex items-center justify-between gap-3 px-4 py-3.5 md:px-6">
+    // Hanya untuk HP. Di layar besar identitas & tombol keluar ada di sidebar.
+    <header className="sticky top-0 z-20 bg-tinta text-kertas shadow-[0_8px_24px_-16px_rgba(0,0,0,0.5)] md:hidden">
+      <div className="flex items-center justify-between gap-3 px-4 py-3.5">
         <div className="min-w-0">
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-kertas/40 md:hidden">
+          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-kertas/40">
             BukuCuci
           </p>
-          <h1 className="truncate text-[17px] font-semibold leading-tight tracking-tight md:text-lg">
+          <h1 className="truncate text-[17px] font-semibold leading-tight tracking-tight">
             {judul}
           </h1>
         </div>

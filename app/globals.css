@@ -1,14 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-kertas: #f2efe8;
-  --color-kertas-terang: #fbfaf6;
+  /* Tiga tingkat kedalaman, bukan dua: latar paling gelap, bidang kerja di
+     tengah, kartu putih paling terang. Tanpa jarak warna ini kartu tidak
+     terbaca sebagai lembar terpisah dan semuanya terasa rata. */
+  --color-kertas: #e6e0d3;
+  --color-kertas-terang: #f5f2ea;
   --color-tinta: #17161a;
-  --color-tinta-2: #5c574f;
-  --color-tinta-3: #8a837a;
-  --color-garis: #ddd6c8;
+  --color-tinta-2: #575146;
+  --color-tinta-3: #8b8477;
+  --color-garis: #d2caba;
   --color-aksen: #0b6b5b;
-  --color-aksen-muda: #e3ede9;
+  --color-aksen-muda: #dfeae5;
 
   --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
@@ -117,11 +120,11 @@ a.baris:active {
    ditimpa lewat --warna-latar di halaman yang latarnya berbeda. */
 .tepi-sobek {
   --warna-latar: var(--color-kertas-terang);
-  height: 8px;
+  height: 11px;
   background-image:
     linear-gradient(45deg, var(--warna-latar) 50%, transparent 50%),
     linear-gradient(-45deg, var(--warna-latar) 50%, transparent 50%);
-  background-size: 10px 10px;
+  background-size: 16px 16px;
   background-repeat: repeat-x;
   background-position: bottom;
 }

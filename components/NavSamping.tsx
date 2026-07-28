@@ -2,22 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { keluar } from "@/app/login/actions";
 import { MENU, menuAktif } from "@/components/menu";
 import PenandaMuat from "@/components/PenandaMuat";
 
-// Navigasi untuk layar besar. Di HP digantikan NavBawah.
-export default function NavSamping() {
+// Navigasi layar besar. Di sini juga tempat identitas laundry dan tombol
+// keluar, supaya bilah atas tidak perlu ada di desktop — bilah hitam setinggi
+// itu hanya untuk mengulang nama yang sudah tertulis di sini.
+export default function NavSamping({ judul }: { judul: string }) {
   const path = usePathname();
 
   return (
-    <aside className="hidden shrink-0 flex-col border-r border-garis bg-kertas md:flex md:w-60">
-      <div className="px-5 pb-6 pt-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-tinta-3">
+    <aside className="hidden shrink-0 flex-col border-r border-garis bg-kertas md:flex md:w-64">
+      <div className="px-6 pb-7 pt-7">
+        <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-tinta-3">
           BukuCuci
         </p>
-        <p className="mt-1 text-[13px] leading-snug text-tinta-3">
-          Buku nota digital
+        <p className="mt-2.5 text-[17px] font-semibold leading-snug tracking-tight">
+          {judul}
         </p>
+        <span className="mt-3 block h-px w-10 bg-aksen" />
       </div>
 
       <nav className="px-3">
@@ -30,7 +34,7 @@ export default function NavSamping() {
                   href={m.href}
                   className={`flex items-center gap-3 px-3 py-2.5 text-sm ${
                     aktif
-                      ? "bg-tinta font-medium text-kertas shadow-[0_6px_16px_-12px_rgba(0,0,0,0.8)]"
+                      ? "bg-tinta font-medium text-kertas shadow-[0_8px_18px_-14px_rgba(0,0,0,0.9)]"
                       : "text-tinta-2 hover:bg-kertas-terang hover:text-tinta"
                   }`}
                 >
@@ -55,6 +59,15 @@ export default function NavSamping() {
           })}
         </ul>
       </nav>
+
+      {/* Didorong ke dasar supaya sidebar tidak berakhir menggantung */}
+      <div className="mt-auto border-t border-garis px-6 py-5">
+        <form action={keluar}>
+          <button className="font-mono text-[11px] uppercase tracking-wider text-tinta-3 hover:text-tinta">
+            Keluar
+          </button>
+        </form>
+      </div>
     </aside>
   );
 }
