@@ -2,19 +2,17 @@
 
 import { useActionState } from "react";
 import { tesKirimWa } from "@/app/(app)/order/[id]/actions";
+import TombolAksi from "@/components/TombolAksi";
 
 export default function TombolTesWa({ id }: { id: string }) {
-  const [hasil, aksi, menunggu] = useActionState(tesKirimWa, null);
+  const [hasil, aksi] = useActionState(tesKirimWa, null);
 
   return (
     <form action={aksi}>
       <input type="hidden" name="id" value={id} />
-      <button
-        disabled={menunggu}
-        className="w-full border border-tinta py-3 text-sm font-medium active:bg-kertas disabled:opacity-50"
-      >
-        {menunggu ? "Mengirim..." : "Tes kirim WhatsApp"}
-      </button>
+      <TombolAksi gaya="garis" saatMenunggu="Mengirim WhatsApp...">
+        Tes kirim WhatsApp
+      </TombolAksi>
 
       {hasil && (
         <p

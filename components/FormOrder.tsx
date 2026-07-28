@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { cariPelanggan, simpanOrder } from "@/app/(app)/order/baru/actions";
+import TombolAksi from "@/components/TombolAksi";
 import { rupiah } from "@/lib/format";
 import type { Layanan } from "@/lib/types";
 
@@ -27,7 +28,7 @@ function hariIniJakarta(): string {
 type StatusPelanggan = "kosong" | "mencari" | "terdaftar" | "baru";
 
 export default function FormOrder({ layanan }: { layanan: Layanan[] }) {
-  const [state, aksi, menunggu] = useActionState(simpanOrder, null);
+  const [state, aksi] = useActionState(simpanOrder, null);
 
   const [noHp, setNoHp] = useState("");
   const [namaKetik, setNamaKetik] = useState("");
@@ -72,9 +73,9 @@ export default function FormOrder({ layanan }: { layanan: Layanan[] }) {
     () =>
       layanan.reduce(
         (n, l) => n + Math.round(l.harga * keAngka(qty[l.id] ?? "")),
-        0
+        0,
       ),
-    [layanan, qty]
+    [layanan, qty],
   );
 
   const jumlahItem = layanan.filter((l) => keAngka(qty[l.id] ?? "") > 0).length;
@@ -202,9 +203,7 @@ export default function FormOrder({ layanan }: { layanan: Layanan[] }) {
                     placeholder="0"
                     aria-label={`Jumlah ${l.nama}`}
                     value={qty[l.id] ?? ""}
-                    onChange={(e) =>
-                      setQty({ ...qty, [l.id]: e.target.value })
-                    }
+                    onChange={(e) => setQty({ ...qty, [l.id]: e.target.value })}
                     className="angka w-16 border border-garis bg-white px-2 py-2.5 text-center font-mono text-base outline-none focus:border-aksen focus:ring-1 focus:ring-aksen"
                   />
                   <span className="w-6 font-mono text-xs text-tinta-3">
@@ -255,12 +254,11 @@ export default function FormOrder({ layanan }: { layanan: Layanan[] }) {
           </p>
         )}
 
-        <button
-          disabled={menunggu || total === 0}
-          className="mt-5 w-full bg-tinta py-4 font-medium text-kertas active:bg-tinta-2 disabled:opacity-40"
-        >
-          {menunggu ? "Menyimpan..." : "Simpan Order"}
-        </button>
+        <div className="mt-5">
+          <TombolAksi saatMenunggu="Menyimpan order..." nonaktif={total === 0}>
+            Simpan Order
+          </TombolAksi>
+        </div>
       </section>
     </form>
   );

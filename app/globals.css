@@ -20,12 +20,117 @@
 
 html {
   background: var(--color-kertas);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+
+/* Butiran halus di seluruh layar, seperti serat kertas nota.
+   Sangat tipis — tujuannya membuat bidang polos tidak terasa "layar kosong",
+   bukan supaya teksturnya kelihatan. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background: var(--color-tinta);
+  color: var(--color-kertas);
+}
+
+/* Cincin fokus yang terlihat dirancang, bukan bawaan browser */
+:focus-visible {
+  outline: 2px solid var(--color-aksen);
+  outline-offset: 2px;
+}
+
+input:focus-visible {
+  outline: none;
 }
 
 .angka {
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Gerak ---------------------------------------------------------------
+   Tujuannya satu: setiap sentuhan harus dibalas seketika, supaya jeda kerja
+   server tidak terasa sebagai "aplikasinya diam". Durasinya sengaja pendek —
+   gerak yang lambat justru membuat aplikasi terasa berat.                  */
+
+/* Isi halaman masuk dengan halus setelah rangka pemuatan hilang */
+@keyframes muncul {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.muncul {
+  animation: muncul 0.18s ease-out both;
+}
+
+/* Semua tombol & tautan membalas sentuhan tanpa menunggu server */
+button,
+a {
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease,
+    opacity 0.12s ease,
+    transform 0.08s ease;
+}
+
+button:active:not(:disabled),
+a:active {
+  transform: scale(0.985);
+}
+
+/* Baris daftar tidak perlu mengecil — cukup latarnya berubah */
+a.baris:active {
+  transform: none;
+}
+
+/* Garis titik-titik penghubung nama layanan dengan harganya, seperti di nota
+   cetak. Dibuat sebagai elemen sendiri supaya bisa memanjang mengikuti sisa
+   ruang berapa pun panjang nama layanannya. */
+.penghubung {
+  flex: 1 1 auto;
+  min-width: 1.5rem;
+  align-self: center;
+  border-bottom: 1px dotted var(--color-garis);
+  transform: translateY(1px);
+}
+
+/* Tepi sobek di dasar kartu nota — mengulang bentuk ikon aplikasi.
+   Segitiga pemotongnya harus sewarna latar halaman, jadi warnanya bisa
+   ditimpa lewat --warna-latar di halaman yang latarnya berbeda. */
+.tepi-sobek {
+  --warna-latar: var(--color-kertas-terang);
+  height: 8px;
+  background-image:
+    linear-gradient(45deg, var(--warna-latar) 50%, transparent 50%),
+    linear-gradient(-45deg, var(--warna-latar) 50%, transparent 50%);
+  background-size: 10px 10px;
+  background-repeat: repeat-x;
+  background-position: bottom;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

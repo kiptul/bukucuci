@@ -2,18 +2,19 @@ import { keluar } from "@/app/login/actions";
 
 export default function Header({ judul }: { judul: string }) {
   return (
-    <header className="sticky top-0 z-10 bg-tinta text-kertas">
-      <div className="flex items-center justify-between gap-3 px-4 py-3">
+    <header className="sticky top-0 z-20 bg-tinta text-kertas shadow-[0_1px_0_rgba(0,0,0,0.06),0_8px_24px_-16px_rgba(0,0,0,0.5)]">
+      <div className="flex items-center justify-between gap-3 px-4 py-3.5 md:px-6">
         <div className="min-w-0">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-kertas/45">
+          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-kertas/40 md:hidden">
             BukuCuci
           </p>
-          <h1 className="truncate text-[17px] font-semibold leading-tight">
+          <h1 className="truncate text-[17px] font-semibold leading-tight tracking-tight md:text-lg">
             {judul}
           </h1>
         </div>
+
         <form action={keluar}>
-          <button className="border border-kertas/25 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-kertas/75 active:bg-kertas/10">
+          <button className="border border-kertas/20 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-kertas/70 hover:border-kertas/40 hover:text-kertas active:bg-kertas/10">
             Keluar
           </button>
         </form>

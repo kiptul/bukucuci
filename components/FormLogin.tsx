@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { masuk } from "@/app/login/actions";
+import TombolAksi from "@/components/TombolAksi";
 
 const gayaInput =
   "w-full border border-garis bg-white px-3.5 py-3 text-base outline-none focus:border-aksen focus:ring-1 focus:ring-aksen";
@@ -10,7 +11,7 @@ const gayaLabel =
   "mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-tinta-2";
 
 export default function FormLogin({ pesanAwal }: { pesanAwal?: string }) {
-  const [state, aksi, menunggu] = useActionState(masuk, null);
+  const [state, aksi] = useActionState(masuk, null);
   const galat = state?.error ?? pesanAwal;
 
   return (
@@ -51,12 +52,7 @@ export default function FormLogin({ pesanAwal }: { pesanAwal?: string }) {
         </p>
       )}
 
-      <button
-        disabled={menunggu}
-        className="w-full bg-tinta py-3.5 font-medium text-kertas active:bg-tinta-2 disabled:opacity-50"
-      >
-        {menunggu ? "Memeriksa..." : "Masuk"}
-      </button>
+      <TombolAksi saatMenunggu="Memeriksa...">Masuk</TombolAksi>
     </form>
   );
 }

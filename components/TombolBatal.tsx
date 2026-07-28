@@ -1,20 +1,21 @@
 "use client";
 
+import TombolAksi from "@/components/TombolAksi";
+
 // Membatalkan order tidak bisa diurungkan, jadi minta konfirmasi dulu.
-// Dipakai di dalam form yang sudah membawa id pesanan.
+// Dipakai di dalam form yang sudah membawa id pesanan dan status tujuan.
 export default function TombolBatal() {
   return (
-    <button
-      name="status"
-      value="BATAL"
+    <TombolAksi
+      gaya="garis"
+      saatMenunggu="Membatalkan..."
       onClick={(e) => {
         if (!confirm("Batalkan order ini? Tidak bisa dikembalikan.")) {
           e.preventDefault();
         }
       }}
-      className="w-full border border-garis py-3 text-sm text-tinta-2 active:bg-kertas"
     >
       Batalkan order
-    </button>
+    </TombolAksi>
   );
 }
