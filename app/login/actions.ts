@@ -26,6 +26,12 @@ export async function masuk(
 
 export async function keluar() {
   const db = await supabaseServer();
-  await db.auth.signOut();
+  // Kalau token sudah kedaluwarsa, signOut bisa melempar error. Sesi tetap
+  // dianggap habis — yang penting user dikembalikan ke halaman login.
+  try {
+    await db.auth.signOut({ scope: "local" });
+  } catch {
+    // abaikan
+  }
   redirect("/login");
 }

@@ -6,9 +6,14 @@ import type { Laundry } from "@/lib/types";
 export async function getProfil() {
   const db = await supabaseServer();
 
-  const {
-    data: { user },
-  } = await db.auth.getUser();
+  // Sama seperti di proxy.ts: error token dianggap belum login, bukan crash.
+  let user = null;
+  try {
+    const { data } = await db.auth.getUser();
+    user = data.user;
+  } catch {
+    user = null;
+  }
   if (!user) redirect("/login");
 
   const { data: pengguna } = await db

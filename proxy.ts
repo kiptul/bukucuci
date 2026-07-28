@@ -4,6 +4,15 @@ import { NextResponse, type NextRequest } from "next/server";
 // Refresh sesi Supabase + pagar halaman: semua rute wajib login kecuali /login.
 // Nama file & export ikut konvensi Next 16 (dulu middleware.ts).
 export async function proxy(request: NextRequest) {
+  // Server Action datang sebagai POST berheader "next-action" dan responsnya
+  // bukan HTML biasa. Kalau di-redirect dari sini, klien menerima respons yang
+  // tidak bisa dibaca ("An unexpected response was received from the server")
+  // dan aksinya batal jalan — ini yang dulu bikin tombol Keluar mati.
+  // Otentikasi tiap action sudah ditangani di dalam action itu sendiri.
+  if (request.method === "POST" && request.headers.has("next-action")) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -27,9 +36,15 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Token kedaluwarsa/dipakai ulang akan melempar AuthApiError. Itu bukan
+  // kondisi fatal — anggap saja belum login supaya user diarahkan ke /login.
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    user = null;
+  }
 
   const path = request.nextUrl.pathname;
 

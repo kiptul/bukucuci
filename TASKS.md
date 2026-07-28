@@ -20,7 +20,7 @@ git add -A && git commit -m "tugas N: <nama tugas>"
 - [x] **1. Verifikasi koneksi Supabase**
   Pastikan `.env.local` terbaca dan client Supabase berfungsi. Selesai kalau: halaman utama bisa memanggil `supabase.from("layanan").select()` tanpa error koneksi. Hasil `data: []` (kosong karena RLS) sudah dianggap benar.
 
-- [ ] **2. Halaman login**
+- [x] **2. Halaman login**
   Email + password via Supabase Auth. Ada middleware yang menjaga sesi dan mengarahkan user belum login ke `/login`. Selesai kalau: bisa login pakai user yang sudah dibuat di Supabase, lalu diarahkan ke `/dashboard`. Logout juga berfungsi.
 
 - [ ] **3. Layout dashboard**
