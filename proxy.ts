@@ -74,6 +74,6 @@ export const config = {
     // ikon, halaman offline — semuanya harus terbaca sebelum login supaya
     // Chrome mau memasang aplikasi), dan endpoint cron yang punya otentikasi
     // sendiri lewat CRON_SECRET.
-    "/((?!_next/static|_next/image|favicon.ico|sw.js|offline.html|manifest.webmanifest|icons/|api/cron/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|sw.js|offline.html|manifest.webmanifest|icons/|api/cron/).*)",
   ],
 };
