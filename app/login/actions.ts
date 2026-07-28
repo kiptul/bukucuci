@@ -21,7 +21,7 @@ export async function masuk(
     return { error: "Email atau password salah." };
   }
 
-  redirect("/");
+  redirect("/dashboard");
 }
 
 export async function keluar() {
