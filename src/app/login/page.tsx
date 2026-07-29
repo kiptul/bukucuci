@@ -14,7 +14,7 @@ export default async function HalamanLogin({
   const { error } = await searchParams;
   const pesanAwal =
     error === "belum-terdaftar"
-      ? "Akun ini belum ditautkan ke laundry mana pun. Jalankan setup_akun.sql di Supabase, lalu login lagi."
+      ? "Akun ini belum ditautkan ke laundry mana pun. Jalankan database/setup_akun.sql di Supabase, lalu login lagi."
       : undefined;
 
   return (

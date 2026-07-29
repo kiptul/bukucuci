@@ -21,7 +21,7 @@ Pakai `INPUT_PULLUP`, jadi:
 ## Langkah Pemasangan
 
 ### 1. Database
-Jalankan `rak_slot.sql` di Supabase SQL Editor.
+Jalankan `database/rak_slot.sql` di Supabase SQL Editor.
 Cek hasilnya: harus muncul 3 baris (A1, A2, A3) dengan status kosong.
 
 ### 2. Environment variable
