@@ -8,7 +8,7 @@
 // Data order sendiri tidak di-cache: aplikasi tetap butuh Supabase, dan
 // menyajikan daftar order basi dari cache lebih berbahaya daripada berguna.
 
-const CACHE = "kelar-v1";
+const CACHE = "kelar-v2";
 const HALAMAN_OFFLINE = "/offline.html";
 
 self.addEventListener("install", (event) => {
@@ -34,20 +34,26 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// PENTING: perpindahan halaman sengaja TIDAK dicegat.
+//
+// Next.js mengirim halaman secara bertahap — kerangkanya lebih dulu, bagian
+// yang menunggu data menyusul lewat aliran yang sama. Kalau aliran itu
+// dilewatkan service worker, bagian penyusulnya tidak pernah sampai dan
+// halaman berhenti selamanya di rangka pemuatan, tanpa satu pun error di
+// konsol. Ini sudah terjadi sekali dan sangat sulit dilacak.
+//
+// Handler ini tetap ada karena Chrome mensyaratkannya untuk "Install app",
+// tapi ia hanya melayani halaman offline dari cache. Konsekuensinya: saat
+// benar-benar tanpa koneksi, yang tampil halaman error bawaan browser, bukan
+// halaman offline kita. Itu tukar-tambah yang disengaja — aplikasi yang selalu
+// terbuka dengan benar jauh lebih penting daripada halaman offline yang cantik.
 self.addEventListener("fetch", (event) => {
-  // Hanya perpindahan halaman yang ditangani. Request data dibiarkan apa adanya
-  // supaya kegagalannya tetap terlihat oleh aplikasi, bukan disamarkan.
-  if (event.request.mode !== "navigate") return;
+  const req = event.request;
+  if (req.method !== "GET") return;
 
-  event.respondWith(
-    (async () => {
-      try {
-        return await fetch(event.request);
-      } catch {
-        const cache = await caches.open(CACHE);
-        const cadangan = await cache.match(HALAMAN_OFFLINE);
-        return cadangan ?? Response.error();
-      }
-    })()
-  );
+  if (new URL(req.url).pathname === HALAMAN_OFFLINE) {
+    event.respondWith(
+      caches.match(HALAMAN_OFFLINE).then((cadangan) => cadangan ?? fetch(req))
+    );
+  }
 });

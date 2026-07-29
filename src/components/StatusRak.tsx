@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
 export type Slot = {
@@ -12,28 +13,62 @@ export type Slot = {
 export default function StatusRak({ awal }: { awal: Slot[] }) {
   const [slots, setSlots] = useState<Slot[]>(awal);
 
-  // Perubahan saklar di rak masuk lewat Realtime Supabase, bukan polling —
-  // layar berubah sendiri tanpa perlu refresh.
+  // Perubahan saklar di rak masuk lewat Realtime Supabase — layar berubah
+  // sendiri tanpa refresh.
   useEffect(() => {
     const db = supabaseBrowser();
+    let kanal: RealtimeChannel | null = null;
+    let jam: ReturnType<typeof setInterval> | null = null;
 
-    const kanal = db
-      .channel("rak")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "rak_slot" },
-        (muatan) => {
-          const baru = muatan.new as Slot;
-          if (!baru?.kode) return;
-          setSlots((lama) =>
-            lama.map((s) => (s.kode === baru.kode ? { ...s, ...baru } : s))
-          );
-        }
-      )
-      .subscribe();
+    const ambilUlang = async () => {
+      const { data } = await db
+        .from("rak_slot")
+        .select("kode, terisi, terakhir_update")
+        .order("kode");
+      if (data) setSlots(data as Slot[]);
+    };
+
+    (async () => {
+      // Token sesi harus diserahkan ke Realtime SEBELUM berlangganan. Kalau
+      // tidak, koneksinya dianggap anonim, RLS menutup semuanya, dan kabar
+      // perubahan tidak pernah datang — tanpa error apa pun di konsol.
+      const { data: sesi } = await db.auth.getSession();
+      if (sesi.session) {
+        db.realtime.setAuth(sesi.session.access_token);
+      }
+
+      kanal = db
+        .channel("rak")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "rak_slot" },
+          (muatan) => {
+            const baru = muatan.new as Slot;
+            if (!baru?.kode) return;
+            setSlots((lama) =>
+              lama.map((s) => (s.kode === baru.kode ? { ...s, ...baru } : s))
+            );
+          }
+        )
+        .subscribe((status) => {
+          // Realtime bisa gagal karena hal di luar kendali aplikasi: publikasi
+          // belum aktif, atau websocket diblokir jaringan laundry. Kalau itu
+          // terjadi, status rak diambil berkala supaya layar tetap benar —
+          // lebih lambat, tapi tidak pernah menampilkan rak yang salah.
+          if (status === "SUBSCRIBED") {
+            if (jam) {
+              clearInterval(jam);
+              jam = null;
+            }
+          } else if (!jam) {
+            jam = setInterval(ambilUlang, 4000);
+          }
+        });
+    })();
 
     return () => {
-      db.removeChannel(kanal);
+      if (jam) clearInterval(jam);
+      if (kanal) db.removeChannel(kanal);
     };
   }, []);
 
