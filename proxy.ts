@@ -72,8 +72,12 @@ export const config = {
   matcher: [
     // Semua rute kecuali aset statis, berkas PWA (manifest, service worker,
     // ikon, halaman offline — semuanya harus terbaca sebelum login supaya
-    // Chrome mau memasang aplikasi), dan endpoint cron yang punya otentikasi
-    // sendiri lewat CRON_SECRET.
-    "/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|sw.js|offline.html|manifest.webmanifest|icons/|api/cron/).*)",
+    // Chrome mau memasang aplikasi), dan dua endpoint mesin yang punya
+    // otentikasi sendiri: cron (CRON_SECRET) dan rak (x-device-token).
+    //
+    // api/rak wajib dikecualikan: ESP32 tidak punya sesi login, jadi kalau
+    // ikut dipagari, POST-nya dibalas pengalihan ke /login dan perangkat
+    // menerima HTML — gagalnya tidak terlihat sebagai 401, tapi 307.
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|sw.js|offline.html|manifest.webmanifest|icons/|api/cron/|api/rak).*)",
   ],
 };

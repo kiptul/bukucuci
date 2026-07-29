@@ -1,6 +1,7 @@
 import Link from "next/link";
 import KontrolDaftar from "@/components/KontrolDaftar";
 import StatusBadge, { pitaStatus } from "@/components/StatusBadge";
+import StatusRak, { type Slot } from "@/components/StatusRak";
 import TandaBuku from "@/components/TandaBuku";
 import { getProfil } from "@/lib/profil";
 import { hpCantik, normalisasiHp, rupiah, tanggalPendek } from "@/lib/format";
@@ -77,8 +78,17 @@ export default async function Dashboard({
   const { data } = await kueri;
   const pesanan = (data ?? []) as unknown as BarisPesanan[];
 
+  // Rak IoT bersifat tambahan: laundry yang belum memasang perangkat tidak
+  // punya tabel/barisnya, dan halaman ini harus tetap jalan seperti biasa.
+  const { data: rak } = await db
+    .from("rak_slot")
+    .select("kode, terisi, terakhir_update")
+    .order("kode");
+
   return (
     <div className="pb-2">
+      {rak?.length ? <StatusRak awal={rak as Slot[]} /> : null}
+
       <KontrolDaftar cari={cari} status={statusAktif}>
         <div className="flex items-baseline justify-between px-4 py-3 md:px-6">
           <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-tinta-2">
