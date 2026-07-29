@@ -47,8 +47,8 @@ openssl rand -hex 24
 Kalau bocor ke browser, seluruh database terbuka.
 
 ### 3. File aplikasi
-- `route.ts` → salin ke `src/app/api/rak/route.ts`
-- `StatusRak.tsx` → salin ke `src/components/StatusRak.tsx`
+- `route.ts` → sudah terpasang di `src/app/api/rak/route.ts`
+- `StatusRak.tsx` → sudah terpasang di `src/components/StatusRak.tsx`
 
 Di halaman dashboard (server component):
 
