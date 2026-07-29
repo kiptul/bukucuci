@@ -1,3 +1,4 @@
+export type PeranPengguna = "SUPER_ADMIN" | "PETUGAS";
 export type StatusPesanan = "MASUK" | "SIAP" | "DIAMBIL" | "BATAL";
 export type StatusPembayaran = "BELUM" | "LUNAS";
 export type SumberPesanan = "BARU" | "DARI_BUKU";
