@@ -1,11 +1,16 @@
 import Link from "next/link";
 import KontrolDaftar from "@/components/ui/KontrolDaftar";
 import StatusBadge, { pitaStatus } from "@/components/ui/StatusBadge";
+import TandaBayar from "@/components/ui/TandaBayar";
 import TandaBuku from "@/components/ui/TandaBuku";
 import { getProfil } from "@/lib/profil";
 import { hpCantik, normalisasiHp, rupiah, tanggalPendek } from "@/lib/format";
 import { FILTER, type PilihanFilter } from "@/lib/filter";
-import type { StatusPesanan, SumberPesanan } from "@/lib/types";
+import type {
+  StatusPembayaran,
+  StatusPesanan,
+  SumberPesanan,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -14,10 +19,25 @@ type BarisPesanan = {
   kode: string;
   total: number;
   status: StatusPesanan;
+  status_bayar: StatusPembayaran;
   sumber: SumberPesanan;
   created_at: string;
   pelanggan: { nama: string; no_hp: string } | null;
 };
+
+// Hanya order yang cuciannya sudah keluar tapi uangnya belum masuk.
+//
+// Sempat ikut menandai yang berstatus SIAP, sampai data menunjukkan itu 9 dari
+// 20 order — dan memang begitu seharusnya: di kebanyakan laundry pembayaran
+// jatuh saat pengambilan, jadi SIAP + BELUM adalah keadaan normal, bukan
+// masalah. Menandainya membuat penanda ini kehilangan artinya. Yang tersisa
+// setelah disaring adalah utang yang sesungguhnya.
+//
+// Untuk order yang belum diambil, keterangan bayarnya tetap terbaca di halaman
+// detail — tempat kasir memang membuka saat melayani pengambilan.
+function perluDitagih(p: BarisPesanan): boolean {
+  return p.status === "DIAMBIL" && p.status_bayar === "BELUM";
+}
 
 // Karakter di bawah punya arti khusus di filter PostgREST — buang dulu
 // supaya pencarian tidak bisa merusak query.
@@ -41,7 +61,7 @@ export default async function Dashboard({
   let kueri = db
     .from("pesanan")
     .select(
-      "id, kode, total, status, sumber, created_at, pelanggan:pelanggan_id(nama, no_hp)",
+      "id, kode, total, status, status_bayar, sumber, created_at, pelanggan:pelanggan_id(nama, no_hp)",
     )
     .order("created_at", { ascending: false })
     .limit(50);
@@ -138,8 +158,15 @@ export default async function Dashboard({
                       {p.pelanggan ? hpCantik(p.pelanggan.no_hp) : ""} ·{" "}
                       {tanggalPendek(p.created_at)}
                     </span>
-                    <span className="angka font-mono text-sm">
-                      {rupiah(p.total)}
+                    {/* Ditaruh menempel pada nominal, bukan di baris kode:
+                        keduanya soal uang dan dibaca bersamaan. Di baris atas
+                        ia harus berebut tempat dengan stempel status dan tanda
+                        buku, yang di layar 375px sudah penuh. */}
+                    <span className="flex shrink-0 items-baseline gap-2">
+                      {perluDitagih(p) && <TandaBayar />}
+                      <span className="angka font-mono text-sm">
+                        {rupiah(p.total)}
+                      </span>
                     </span>
                   </div>
                 </Link>

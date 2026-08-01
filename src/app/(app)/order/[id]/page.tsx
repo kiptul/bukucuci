@@ -7,8 +7,12 @@ import TombolKirimUlang from "@/components/ui/TombolKirimUlang";
 import { getProfil } from "@/lib/profil";
 import { hpCantik, rupiah, tanggalLengkap } from "@/lib/format";
 import TandaBuku from "@/components/ui/TandaBuku";
-import type { StatusPesanan, SumberPesanan } from "@/lib/types";
-import { ubahStatus } from "./actions";
+import type {
+  StatusPembayaran,
+  StatusPesanan,
+  SumberPesanan,
+} from "@/lib/types";
+import { ubahBayar, ubahStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +22,7 @@ type Detail = {
   subtotal: number;
   total: number;
   status: StatusPesanan;
+  status_bayar: StatusPembayaran;
   sumber: SumberPesanan;
   catatan: string | null;
   created_at: string;
@@ -35,7 +40,7 @@ export default async function DetailOrder({
   const { data } = await db
     .from("pesanan")
     .select(
-      "id, kode, subtotal, total, status, sumber, catatan, created_at, pelanggan:pelanggan_id(nama, no_hp)",
+      "id, kode, subtotal, total, status, status_bayar, sumber, catatan, created_at, pelanggan:pelanggan_id(nama, no_hp)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -80,6 +85,9 @@ export default async function DetailOrder({
         : null;
 
   const bisaBatal = pesanan.status === "MASUK" || pesanan.status === "SIAP";
+
+  const lunas = pesanan.status_bayar === "LUNAS";
+  const relevanBayar = pesanan.status !== "BATAL";
 
   return (
     <div className="md:mx-auto md:max-w-2xl">
@@ -146,13 +154,33 @@ export default async function DetailOrder({
             </ul>
           </div>
 
-          <div className="mt-5 flex items-baseline justify-between border-t-2 border-tinta pb-5 pt-3.5">
-            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-tinta-2">
-              Total
-            </span>
-            <span className="angka font-mono text-[26px] font-semibold tracking-tight">
-              {rupiah(pesanan.total)}
-            </span>
+          <div className="mt-5 border-t-2 border-tinta pb-5 pt-3.5">
+            <div className="flex items-baseline justify-between">
+              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-tinta-2">
+                Total
+              </span>
+              <span className="angka font-mono text-[26px] font-semibold tracking-tight">
+                {rupiah(pesanan.total)}
+              </span>
+            </div>
+
+            {/* Di buku nota, kolom bayar selalu menempel pada total — keduanya
+                dibaca sekaligus, bukan bergantian. Order batal tidak menagih
+                apa pun, jadi barisnya ditiadakan sekalian. */}
+            {relevanBayar && (
+              <div className="mt-3 flex items-baseline justify-between border-t border-dashed border-garis pt-3">
+                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-tinta-2">
+                  Bayar
+                </span>
+                <span
+                  className={`font-mono text-[11px] font-semibold uppercase tracking-wider ${
+                    lunas ? "text-aksen" : "text-red-900"
+                  }`}
+                >
+                  {lunas ? "Lunas" : "Belum bayar"}
+                </span>
+              </div>
+            )}
           </div>
 
           {pesanan.catatan && (
@@ -235,7 +263,7 @@ export default async function DetailOrder({
         </div>
       </section>
 
-      {(berikutnya || bisaBatal) && (
+      {(berikutnya || bisaBatal || relevanBayar) && (
         // Dua form terpisah, bukan satu form dua tombol: dengan begitu tiap
         // tombol punya status menunggunya sendiri dan hanya yang ditekan
         // yang berputar.
@@ -249,6 +277,26 @@ export default async function DetailOrder({
               </TombolAksi>
             </form>
           )}
+          {/* Penanda bayar tetap tersedia sampai order selesai — di banyak
+              laundry uangnya baru diserahkan saat cucian diambil, kadang malah
+              menyusul sesudahnya. */}
+          {relevanBayar && (
+            <form action={ubahBayar}>
+              <input type="hidden" name="id" value={pesanan.id} />
+              <input
+                type="hidden"
+                name="bayar"
+                value={lunas ? "BELUM" : "LUNAS"}
+              />
+              <TombolAksi
+                gaya="garis"
+                saatMenunggu={lunas ? "Mengembalikan..." : "Menandai lunas..."}
+              >
+                {lunas ? "Batalkan tanda lunas" : "Tandai sudah dibayar"}
+              </TombolAksi>
+            </form>
+          )}
+
           {bisaBatal && (
             <form action={ubahStatus}>
               <input type="hidden" name="id" value={pesanan.id} />

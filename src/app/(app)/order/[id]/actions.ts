@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { getProfil } from "@/lib/profil";
 import { kirimNotifikasi, type HasilNotifikasi } from "@/lib/notifikasi";
-import type { JenisNotifikasi, StatusPesanan } from "@/lib/types";
+import type {
+  JenisNotifikasi,
+  StatusPembayaran,
+  StatusPesanan,
+} from "@/lib/types";
 
 type PesananKirim = {
   id: string;
@@ -119,6 +123,39 @@ export async function ubahStatus(formData: FormData) {
       jenis
     );
   }
+
+  revalidatePath(`/order/${id}`);
+  revalidatePath("/dashboard");
+}
+
+// Tandai order lunas atau kembalikan ke belum bayar.
+//
+// Berbeda dari `ubahStatus` yang sengaja satu arah, penanda ini bolak-balik.
+// Alasannya praktis: salah pencet "Lunas" itu wajar terjadi di konter yang
+// ramai, dan kalau tidak ada jalan pulang, kasir akan berhenti mempercayai
+// layar lalu kembali membuka buku — persis yang ingin dihindari aplikasi ini.
+export async function ubahBayar(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const tujuan = String(formData.get("bayar") ?? "") as StatusPembayaran;
+
+  if (tujuan !== "LUNAS" && tujuan !== "BELUM") return;
+
+  const { db } = await getProfil();
+
+  const { data: pesanan } = await db
+    .from("pesanan")
+    .select("id, status")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!pesanan) return;
+
+  // Order yang dibatalkan tidak pernah menagih apa pun. Membiarkannya
+  // ditandai lunas cuma menciptakan baris yang membingungkan saat ditengok
+  // lagi berminggu-minggu kemudian.
+  if (pesanan.status === "BATAL") return;
+
+  await db.from("pesanan").update({ status_bayar: tujuan }).eq("id", id);
 
   revalidatePath(`/order/${id}`);
   revalidatePath("/dashboard");
