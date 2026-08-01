@@ -1,4 +1,4 @@
-import Rangka from "@/components/Rangka";
+import Rangka from "@/components/ui/Rangka";
 
 // Bentuknya sengaja meniru daftar order yang sebenarnya, supaya saat data
 // datang halaman tidak melompat — hanya berganti isi.

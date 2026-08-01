@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { cariPelanggan, simpanOrder } from "@/app/(app)/order/baru/actions";
-import TombolAksi from "@/components/TombolAksi";
+import TombolAksi from "@/components/ui/TombolAksi";
 import { rupiah } from "@/lib/format";
 import type { Layanan } from "@/lib/types";
 

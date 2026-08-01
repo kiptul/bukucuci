@@ -1,4 +1,4 @@
-import FormOrder from "@/components/FormOrder";
+import FormOrder from "@/components/forms/FormOrder";
 import { getProfil } from "@/lib/profil";
 import type { Layanan } from "@/lib/types";
 

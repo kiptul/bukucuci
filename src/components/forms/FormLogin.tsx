@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { masuk } from "@/app/login/actions";
-import TombolAksi from "@/components/TombolAksi";
+import TombolAksi from "@/components/ui/TombolAksi";
 
 const gayaInput =
   "w-full border border-garis bg-white px-3.5 py-3 text-base outline-none focus:border-aksen focus:ring-1 focus:ring-aksen";

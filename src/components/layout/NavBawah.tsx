@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MENU, menuAktif } from "@/components/menu";
-import PenandaMuat from "@/components/PenandaMuat";
+import { MENU, menuAktif } from "@/components/navigation/menu";
+import PenandaMuat from "@/components/ui/PenandaMuat";
 
 // Navigasi untuk HP. Di layar besar digantikan NavSamping.
 export default function NavBawah() {

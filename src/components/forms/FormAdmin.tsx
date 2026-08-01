@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import TombolAksi from "@/components/TombolAksi";
+import TombolAksi from "@/components/ui/TombolAksi";
 import type { Hasil } from "@/app/admin/actions";
 
 export const gayaInput =

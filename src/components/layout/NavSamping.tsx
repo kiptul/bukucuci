@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { keluar } from "@/app/login/actions";
-import { MENU, menuAktif } from "@/components/menu";
-import PenandaMuat from "@/components/PenandaMuat";
+import { MENU, menuAktif } from "@/components/navigation/menu";
+import PenandaMuat from "@/components/ui/PenandaMuat";
 
 // Navigasi layar besar. Di sini juga tempat identitas laundry dan tombol
 // keluar, supaya bilah atas tidak perlu ada di desktop — bilah hitam setinggi
@@ -13,7 +13,7 @@ export default function NavSamping({ judul }: { judul: string }) {
   const path = usePathname();
 
   return (
-    <aside className="hidden shrink-0 flex-col border-r border-garis bg-kertas md:flex md:w-64">
+    <aside className="hidden min-h-dvh shrink-0 flex-col border-r border-garis bg-kertas md:flex md:w-64">
       <div className="px-6 pb-7 pt-7">
         <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-tinta-3">
           Kelar
@@ -22,6 +22,11 @@ export default function NavSamping({ judul }: { judul: string }) {
           {judul}
         </p>
         <span className="mt-3 block h-px w-10 bg-aksen" />
+        <form action={keluar} className="mt-5">
+          <button className="w-full border border-garis px-3 py-2 text-left font-mono text-[11px] uppercase tracking-wider text-tinta-3 transition-colors hover:border-tinta-3 hover:text-tinta">
+            Keluar
+          </button>
+        </form>
       </div>
 
       <nav className="px-3">
@@ -60,14 +65,6 @@ export default function NavSamping({ judul }: { judul: string }) {
         </ul>
       </nav>
 
-      {/* Didorong ke dasar supaya sidebar tidak berakhir menggantung */}
-      <div className="mt-auto border-t border-garis px-6 py-5">
-        <form action={keluar}>
-          <button className="font-mono text-[11px] uppercase tracking-wider text-tinta-3 hover:text-tinta">
-            Keluar
-          </button>
-        </form>
-      </div>
     </aside>
   );
 }

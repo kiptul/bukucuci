@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import Putaran from "@/components/Putaran";
+import Putaran from "@/components/ui/Putaran";
 
 const GAYA = {
   utama: "bg-tinta text-kertas active:bg-tinta-2",

@@ -1,6 +1,6 @@
-import Header from "@/components/Header";
-import NavBawah from "@/components/NavBawah";
-import NavSamping from "@/components/NavSamping";
+import Header from "@/components/layout/Header";
+import NavBawah from "@/components/layout/NavBawah";
+import NavSamping from "@/components/layout/NavSamping";
 import { getProfil } from "@/lib/profil";
 
 // Kerangka semua halaman setelah login.

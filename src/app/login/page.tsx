@@ -1,4 +1,4 @@
-import FormLogin from "@/components/FormLogin";
+import FormLogin from "@/components/forms/FormLogin";
 
 const JANJI = [
   "Catat order secepat menulis di buku",

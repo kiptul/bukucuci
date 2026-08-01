@@ -1,7 +1,7 @@
 import Link from "next/link";
-import KontrolDaftar from "@/components/KontrolDaftar";
-import StatusBadge, { pitaStatus } from "@/components/StatusBadge";
-import TandaBuku from "@/components/TandaBuku";
+import KontrolDaftar from "@/components/ui/KontrolDaftar";
+import StatusBadge, { pitaStatus } from "@/components/ui/StatusBadge";
+import TandaBuku from "@/components/ui/TandaBuku";
 import { getProfil } from "@/lib/profil";
 import { hpCantik, normalisasiHp, rupiah, tanggalPendek } from "@/lib/format";
 import { FILTER, type PilihanFilter } from "@/lib/filter";

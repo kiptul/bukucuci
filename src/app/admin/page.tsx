@@ -1,5 +1,5 @@
 import Link from "next/link";
-import FormAdmin, { gayaInput, gayaLabel } from "@/components/FormAdmin";
+import FormAdmin, { gayaInput, gayaLabel } from "@/components/forms/FormAdmin";
 import { pastikanSuperAdmin } from "@/lib/admin";
 import { tambahLaundry } from "./actions";
 import { hpCantik } from "@/lib/format";

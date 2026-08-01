@@ -1,7 +1,7 @@
 "use client";
 
 import { useLinkStatus } from "next/link";
-import Putaran from "@/components/Putaran";
+import Putaran from "@/components/ui/Putaran";
 
 // Harus dipasang sebagai anak dari <Link>. Selama halaman tujuan masih
 // dimuat, ikon menu berganti jadi putaran — jadi tekanan jari langsung

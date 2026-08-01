@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { kirimUlangWa } from "@/app/(app)/order/[id]/actions";
-import TombolAksi from "@/components/TombolAksi";
+import TombolAksi from "@/components/ui/TombolAksi";
 
 // Muncul hanya kalau ada pesan berstatus GAGAL di order ini.
 export default function TombolKirimUlang({ id }: { id: string }) {

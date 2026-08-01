@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import StatusBadge from "@/components/StatusBadge";
-import TombolAksi from "@/components/TombolAksi";
-import TombolBatal from "@/components/TombolBatal";
-import TombolKirimUlang from "@/components/TombolKirimUlang";
+import StatusBadge from "@/components/ui/StatusBadge";
+import TombolAksi from "@/components/ui/TombolAksi";
+import TombolBatal from "@/components/ui/TombolBatal";
+import TombolKirimUlang from "@/components/ui/TombolKirimUlang";
 import { getProfil } from "@/lib/profil";
 import { hpCantik, rupiah, tanggalLengkap } from "@/lib/format";
-import TandaBuku from "@/components/TandaBuku";
+import TandaBuku from "@/components/ui/TandaBuku";
 import type { StatusPesanan, SumberPesanan } from "@/lib/types";
 import { ubahStatus } from "./actions";
 

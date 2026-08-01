@@ -1,6 +1,6 @@
 "use client";
 
-import TombolAksi from "@/components/TombolAksi";
+import TombolAksi from "@/components/ui/TombolAksi";
 
 // Membatalkan order tidak bisa diurungkan, jadi minta konfirmasi dulu.
 // Dipakai di dalam form yang sudah membawa id pesanan dan status tujuan.

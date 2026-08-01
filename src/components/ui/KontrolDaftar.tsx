@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import Putaran from "@/components/Putaran";
+import Putaran from "@/components/ui/Putaran";
 import { FILTER } from "@/lib/filter";
 
 // Kotak cari + filter status + daftarnya sekalian, disatukan supaya ketiganya

@@ -1,8 +1,20 @@
-import StatusRak, { type Slot } from "@/components/StatusRak";
+import StatusRak, { type Slot } from "@/components/ui/StatusRak";
 import { getProfil } from "@/lib/profil";
 import { tanggalLengkap } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+// Perangkat melapor tiap 30 detik. Lewat 90 detik tanpa kabar berarti mati,
+// dan itu harus dibedakan dari rak yang kebetulan kosong.
+//
+// Dipisah ke luar komponen bukan sekadar kerapian: `Date.now()` di dalam badan
+// komponen kena aturan react-hooks/purity, yang mengira ini komponen client
+// yang bisa dirender ulang kapan saja. Di sini halamannya Server Component
+// force-dynamic — waktu dibaca sekali per permintaan, dan itu memang yang
+// diinginkan.
+function masihHidup(kontak: Date | null): boolean {
+  return kontak ? Date.now() - kontak.getTime() < 90_000 : false;
+}
 
 export default async function HalamanRak() {
   const { db } = await getProfil();
@@ -28,12 +40,10 @@ export default async function HalamanRak() {
     );
   }
 
-  // Perangkat melapor tiap 30 detik. Lewat 90 detik tanpa kabar berarti mati,
-  // dan itu harus dibedakan dari rak yang kebetulan kosong.
   const kontak = perangkat?.terakhir_kontak
     ? new Date(perangkat.terakhir_kontak)
     : null;
-  const hidup = kontak ? Date.now() - kontak.getTime() < 90_000 : false;
+  const hidup = masihHidup(kontak);
 
   return (
     <div className="md:mx-auto md:max-w-xl">

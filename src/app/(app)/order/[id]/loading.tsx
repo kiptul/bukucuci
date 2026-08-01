@@ -1,4 +1,4 @@
-import Rangka from "@/components/Rangka";
+import Rangka from "@/components/ui/Rangka";
 
 export default function Memuat() {
   return (
