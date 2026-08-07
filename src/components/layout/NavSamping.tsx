@@ -63,8 +63,42 @@ export default function NavSamping({ judul }: { judul: string }) {
             );
           })}
         </ul>
-      </nav>
 
+        {/* Dipisah garis dari tiga menu utama: ini bukan pekerjaan harian. */}
+        <ul className="mt-3 border-t border-garis pt-3">
+          <li>
+            <Link
+              href="/pengaturan"
+              className={`flex items-center gap-3 px-3 py-2.5 text-sm ${
+                menuAktif(path, "/pengaturan")
+                  ? "bg-tinta font-medium text-kertas shadow-[0_8px_18px_-14px_rgba(0,0,0,0.9)]"
+                  : "text-tinta-2 hover:bg-kertas-terang hover:text-tinta"
+              }`}
+            >
+              <PenandaMuat
+                anak={
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    className="h-5 w-5 shrink-0"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M10.3 4.3h3.4l.4 2.2 2 1.2 2.1-.8 1.7 3-1.6 1.5v2.3l1.6 1.5-1.7 3-2.1-.8-2 1.2-.4 2.2h-3.4l-.4-2.2-2-1.2-2.1.8-1.7-3L5.7 14v-2.3L4.1 10.2l1.7-3 2.1.8 2-1.2z"
+                    />
+                    <circle cx="12" cy="12" r="2.4" />
+                  </svg>
+                }
+              />
+              Pengaturan
+            </Link>
+          </li>
+        </ul>
+      </nav>
     </aside>
   );
 }

@@ -32,10 +32,10 @@ produk, bukan pekerjaan yang belum selesai.
 | L7 | Tandai lunas / kembalikan ke belum bayar | ✅ ada |
 | L8 | Kirim ulang WhatsApp yang gagal | ✅ ada |
 | L9 | Lihat status rak | ✅ ada |
-| **L10** | **Ubah harga layanan** | ❌ **tidak ada — lihat catatan** |
-| **L11** | **Tambah / nonaktifkan layanan** | ❌ hanya superadmin |
-| **L12** | **Ubah profil usaha** (nama, alamat, telp, footer nota) | ❌ tidak ada di mana pun |
-| **L13** | **Ubah template pesan WhatsApp** | ❌ tidak ada di mana pun |
+| L10 | Ubah harga layanan | ✅ ada, 8 Agustus 2026 |
+| L11 | Tambah / nonaktifkan layanan | ✅ ada, 8 Agustus 2026 |
+| L12 | Ubah profil usaha (nama, alamat, telp, footer nota) | ✅ ada, 8 Agustus 2026 |
+| L13 | Ubah template pesan WhatsApp | ✅ ada, 8 Agustus 2026 |
 | L14 | Ganti password sendiri | ⛔ **sengaja tidak dibuat** — diarahkan menghubungi admin |
 | L15 | Atur slot rak (tambah/ubah kode) | ❌ hanya lewat SQL |
 | **L16** | **Terima nota bergambar saat order dibuat** | ❌ belum ada — lihat catatan |
@@ -131,10 +131,12 @@ satori dan resvg wasm-nya.
    Template pesan dan 3 layanan awal ikut tersemai otomatis. ✅
 2. **Superadmin** membuat akunnya: email + password awal yang terlihat. ✅
 3. **Superadmin** menyerahkan email dan password itu ke pemilik laundry. ✅
-4. **Pemilik** masuk, lalu mengisi harga tiga layanan yang sudah ada.
-   *(belum ada — L10)*
-5. **Pemilik** memeriksa dan menyesuaikan 5 template pesan. *(belum ada — L13)*
-6. **Pemilik** mulai mencatat order.
+4. **Pemilik** masuk, lalu mengisi harga tiga layanan yang sudah ada. ✅
+5. **Pemilik** memeriksa dan menyesuaikan 5 template pesan. ✅
+6. **Pemilik** mulai mencatat order. ✅
+
+**Seluruh alur ini kini bisa dijalankan tanpa menyentuh SQL sama sekali.** Yang
+belum: belum ada seorang pun yang benar-benar menjalaninya dari nol.
 
 Layanan disemai dengan **harga 0** supaya angka nol di layar menuntut
 perhatian. Harga karangan yang kelihatan wajar jauh lebih berbahaya: ia bisa
@@ -142,22 +144,24 @@ diam-diam dipakai menagih pelanggan.
 
 ## Urutan yang disepakati
 
-Sisanya ditahan sampai 10 Agustus lewat — sebelum itu prioritasnya menjaga alur
-demo tidak rusak.
+1. ✅ **Semai layanan awal** — 8 Agustus 2026
+2. ✅ **S7 reset password di konsol admin** — 8 Agustus 2026
+3. ✅ **L10 + L11 — layanan & harga di sisi laundry** — 8 Agustus 2026
+4. ✅ **L12 — profil usaha** — 8 Agustus 2026
+5. ✅ **L13 — template pesan** — 8 Agustus 2026, dikerjakan lebih awal karena
+   halaman induk pengaturan menautkannya dan tautan buntu lebih buruk daripada
+   urutan yang meleset
+6. **Cabut pengelolaan layanan dari `/admin`.** Sekarang layanan bisa diubah
+   dari dua tempat, dan dua sumber kebenaran akan berbeda isi cepat atau
+   lambat. Sisakan tampilan saja di konsol — superadmin perlu *melihat* untuk
+   membantu kalau laundry menelepon, tidak perlu *mengubah*.
+7. **L16 — nota bergambar.**
+8. **S8 — nonaktifkan laundry yang berhenti.**
+9. **S6 — ubah profil laundry dari sisi superadmin.** Sebagian sudah tertutup
+   oleh L12; kerjakan terakhir kalau memang masih perlu.
 
-1. ✅ **Semai layanan awal** — dikerjakan 8 Agustus 2026
-2. ✅ **S7 reset password di konsol admin** — dikerjakan 8 Agustus 2026
-3. **L10 + L11 — layanan & harga di sisi laundry.** Paling menentukan; tanpa
-   ini produknya tidak bisa ditawarkan.
-4. **L12 — profil usaha**, termasuk baris "untuk ganti password, hubungi admin"
-   dengan tautan WhatsApp. Footer nota ikut terkirim ke pelanggan, jadi ini
-   terlihat keluar.
-5. **L16 — nota bergambar.** Ditaruh setelah L12 karena footer nota ikut
-   tercetak di gambarnya; dikerjakan duluan berarti dikerjakan dua kali.
-6. **L13 — template pesan.**
-7. **S8 — nonaktifkan laundry yang berhenti.**
-8. **S6 — ubah profil laundry dari sisi superadmin.** Sebagian tertutup oleh
-   L12; kerjakan terakhir.
+Belum satu pun halaman `/pengaturan` diuji lewat sesi login sungguhan — semuanya
+baru lolos build dan TypeScript.
 
 ## Rancangan navigasi pengaturan
 
