@@ -29,6 +29,19 @@ const TEMPLATE_AWAL = [
   },
 ];
 
+// Harganya sengaja 0. Pemilik laundry wajib mengisinya sendiri, dan angka nol
+// di layar jauh lebih jelas menuntut perhatian daripada harga karangan yang
+// kelihatan wajar lalu diam-diam dipakai menagih pelanggan.
+//
+// Tiga baris ini bukan tebakan: itu layanan yang muncul di hampir semua laundry
+// yang disurvei. Yang tidak dipakai tinggal dinonaktifkan — satu ketukan, jauh
+// lebih ringan daripada mengarang daftar dari layar kosong.
+const LAYANAN_AWAL = [
+  { nama: "Cuci Setrika Reguler", satuan: "kg", harga: 0 },
+  { nama: "Cuci Setrika Express", satuan: "kg", harga: 0 },
+  { nama: "Bed Cover", satuan: "pcs", harga: 0 },
+];
+
 export async function tambahLaundry(_prev: Hasil, formData: FormData): Promise<Hasil> {
   const { db } = await pastikanSuperAdmin();
 
@@ -57,12 +70,21 @@ export async function tambahLaundry(_prev: Hasil, formData: FormData): Promise<H
 
   // Laundry baru tanpa template pesan akan gagal mengirim WhatsApp sama sekali,
   // dan kegagalannya baru terasa jauh di kemudian hari. Jadi diisi sejak awal.
-  await db.from("template_pesan").insert(
-    TEMPLATE_AWAL.map((t) => ({ ...t, laundry_id: laundry.id }))
-  );
+  // Layanan ikut disemai dengan alasan serupa: tanpa layanan, order pertama
+  // tidak bisa dicatat, dan pemiliknya menghadapi layar kosong di menit pertama.
+  await Promise.all([
+    db.from("template_pesan").insert(
+      TEMPLATE_AWAL.map((t) => ({ ...t, laundry_id: laundry.id }))
+    ),
+    db.from("layanan").insert(
+      LAYANAN_AWAL.map((l) => ({ ...l, laundry_id: laundry.id }))
+    ),
+  ]);
 
   revalidatePath("/admin");
-  return { pesan: `Laundry "${nama}" dibuat beserta 5 template pesannya.` };
+  return {
+    pesan: `Laundry "${nama}" dibuat beserta 5 template pesan dan 3 layanan awal. Harga layanannya masih 0 — isi dulu sebelum dipakai.`,
+  };
 }
 
 export async function tambahPengguna(_prev: Hasil, formData: FormData): Promise<Hasil> {
@@ -131,6 +153,50 @@ export async function tambahPengguna(_prev: Hasil, formData: FormData): Promise<
   revalidatePath("/admin");
   revalidatePath(`/admin/laundry/${laundryId}`);
   return { pesan: `Akun ${email} dibuat untuk laundry ini.` };
+}
+
+// Satu-satunya jalan pulih kalau pemilik laundry lupa passwordnya.
+//
+// Kelar sengaja tidak punya alur lupa-password lewat email, dan laundry juga
+// tidak bisa mengganti passwordnya sendiri — keduanya keputusan sadar. Maka
+// tanpa fungsi ini, akun yang lupa password terkunci selamanya dan satu-satunya
+// jalan tersisa adalah menyentuh basis data langsung.
+export async function resetSandi(_prev: Hasil, formData: FormData): Promise<Hasil> {
+  const { db } = await pastikanSuperAdmin();
+
+  const penggunaId = String(formData.get("pengguna_id") ?? "");
+  const laundryId = String(formData.get("laundry_id") ?? "");
+  const sandi = String(formData.get("sandi") ?? "");
+
+  if (!penggunaId) return { error: "Akun tidak dikenali." };
+  if (sandi.length < 8) return { error: "Password minimal 8 karakter." };
+
+  // Pastikan akun yang direset memang milik laundry yang sedang dibuka. Tanpa
+  // ini, id akun mana pun yang diselipkan ke formulir akan ikut diganti
+  // passwordnya — termasuk akun superadmin lain.
+  const { data: pemilik } = await db
+    .from("pengguna")
+    .select("id")
+    .eq("id", penggunaId)
+    .eq("laundry_id", laundryId)
+    .maybeSingle();
+
+  if (!pemilik) {
+    return { error: "Akun itu bukan milik laundry ini." };
+  }
+
+  const { error } = await db.auth.admin.updateUserById(penggunaId, {
+    password: sandi,
+  });
+
+  if (error) {
+    return { error: `Gagal mengganti password: ${error.message}` };
+  }
+
+  revalidatePath(`/admin/laundry/${laundryId}`);
+  return {
+    pesan: "Password diganti. Bacakan ke pemilik laundry sekarang — password ini tidak bisa ditampilkan lagi setelah halaman ditutup.",
+  };
 }
 
 export async function tambahLayanan(_prev: Hasil, formData: FormData): Promise<Hasil> {

@@ -3,7 +3,12 @@ import { notFound } from "next/navigation";
 import FormAdmin, { gayaInput, gayaLabel } from "@/components/forms/FormAdmin";
 import { pastikanSuperAdmin } from "@/lib/admin";
 import { hpCantik, rupiah } from "@/lib/format";
-import { tambahLayanan, tambahPengguna, ubahAktifLayanan } from "../../actions";
+import {
+  resetSandi,
+  tambahLayanan,
+  tambahPengguna,
+  ubahAktifLayanan,
+} from "../../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -166,11 +171,48 @@ export default async function DetailLaundry({
             Satu laundry satu akun, jadi menampilkan form "tambah" di sebelah
             akun yang sudah ada cuma menjanjikan sesuatu yang akan ditolak. */}
         {akun ? (
-          <div className="mt-5 border border-garis bg-white p-5">
-            <p className="font-medium">{akun.nama ?? "—"}</p>
-            <p className="mt-1.5 text-sm leading-relaxed text-tinta-2">
-              Satu-satunya akun yang bisa membuka laundry ini.
-            </p>
+          <div className="mt-5 space-y-5">
+            <div className="border border-garis bg-white p-5">
+              <p className="font-medium">{akun.nama ?? "—"}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-tinta-2">
+                Satu-satunya akun yang bisa membuka laundry ini.
+              </p>
+            </div>
+
+            {/* Kelar tidak punya alur lupa-password lewat email, dan laundry
+                tidak bisa mengganti passwordnya sendiri. Formulir ini satu-
+                satunya jalan pulih kalau pemiliknya lupa. */}
+            <div className="border border-garis bg-white p-5">
+              <h3 className="mb-1 font-mono text-[11px] uppercase tracking-wider text-tinta-2">
+                Reset password
+              </h3>
+              <p className="mb-4 text-sm leading-relaxed text-tinta-3">
+                Dipakai kalau pemilik laundry lupa passwordnya. Password lama
+                langsung berhenti berlaku.
+              </p>
+              <FormAdmin
+                aksi={resetSandi}
+                saatMenunggu="Mengganti..."
+                tombol="Ganti password"
+              >
+                <input type="hidden" name="pengguna_id" value={akun.id} />
+                <input type="hidden" name="laundry_id" value={id} />
+                <div>
+                  <label htmlFor="sandi-baru" className={gayaLabel}>
+                    Password baru · minimal 8 karakter
+                  </label>
+                  <input
+                    id="sandi-baru"
+                    name="sandi"
+                    type="text"
+                    required
+                    minLength={8}
+                    autoComplete="off"
+                    className={`${gayaInput} font-mono`}
+                  />
+                </div>
+              </FormAdmin>
+            </div>
           </div>
         ) : (
           <>
