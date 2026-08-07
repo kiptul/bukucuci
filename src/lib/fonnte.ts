@@ -17,6 +17,13 @@ export async function kirimWhatsApp(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ target, message }),
+      // Tanpa batas waktu, Fonnte yang menggantung ikut menggantungkan aksi
+      // "SIAP" yang memanggilnya — kasir menatap tombol berputar tanpa akhir
+      // dan tidak punya jalan keluar. Sepuluh detik: cukup longgar untuk
+      // jaringan konter yang lambat, cukup pendek untuk tidak terasa macet.
+      // Pesan yang kadung lewat batas ini tercatat GAGAL dan bisa dikirim
+      // ulang dari halaman order.
+      signal: AbortSignal.timeout(10_000),
     });
 
     const data = await res.json().catch(() => null);
@@ -29,6 +36,12 @@ export async function kirimWhatsApp(
       keterangan: `Fonnte menolak: ${data?.reason ?? res.status}`,
     };
   } catch (e) {
+    if (e instanceof Error && e.name === "TimeoutError") {
+      return {
+        ok: false,
+        keterangan: "Fonnte tidak menjawab dalam 10 detik",
+      };
+    }
     return {
       ok: false,
       keterangan: `gagal menghubungi Fonnte: ${e instanceof Error ? e.message : e}`,

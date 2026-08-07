@@ -47,12 +47,22 @@ konsol superadmin, dan modul rak IoT.
   `riwayat_status`, `notifikasi_log`, `rak_slot`. Selesai kalau: setiap
   percobaan lintas laundry mengembalikan kosong atau ditolak.
 
-- [ ] **4. Tangani kegagalan Fonnte**
-  Sekarang belum jelas apa yang terjadi kalau Fonnte mati, token kedaluwarsa,
-  atau nomor pelanggan tidak sah. Tentukan: apakah statusnya tetap berubah
-  kalau pesan gagal, apakah kasir diberi tahu, dan apakah ada cara mengirim
-  ulang. Selesai kalau: token sengaja dibuat salah, dan aplikasi tetap jalan
-  dengan pesan yang jelas ke kasir.
+- [x] **4. Tangani kegagalan Fonnte**
+  Ternyata sudah tertangani sejak awal, lebih matang dari dugaan di catatan
+  ini: token kosong, Fonnte menolak, dan koneksi putus semuanya dikembalikan
+  sebagai hasil biasa tanpa melempar error; status pesanan tetap berubah
+  (disengaja, agar kegagalan WhatsApp tidak menahan kasir); kegagalan tampil
+  merah beserta alasannya di halaman order; dan tombol "Kirim ulang pesan yang
+  gagal" muncul hanya kalau ada yang berstatus `GAGAL`.
+
+  Yang benar-benar kurang cuma batas waktu. `fetch` ke Fonnte tidak punya
+  timeout, jadi Fonnte yang menggantung ikut menggantungkan aksi "SIAP" yang
+  memanggilnya — kasir menatap tombol berputar tanpa jalan keluar. Ditambahkan
+  `AbortSignal.timeout(10 detik)`.
+
+  Belum diuji lawan Fonnte sungguhan yang lambat. Cara mengujinya: isi
+  `FONNTE_TOKEN` dengan nilai ngawur, tekan SIAP, pastikan pesan galatnya jelas
+  dan statusnya tetap berubah.
 
 - [ ] **5. Kelola akun laundry dari konsol superadmin**
   Sekarang akun bisa dibuat. Lengkapi yang dibutuhkan untuk pemakaian nyata:
