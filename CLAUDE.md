@@ -16,17 +16,20 @@ Daftar tugas: `vibe/TASKS.md`
 | `database/` | berkas SQL — dijalankan manual di Supabase SQL Editor |
 | `perangkat/` | firmware ESP32 modul rak IoT + panduan pemasangannya |
 | `vibe/` | aturan kerja (`CLAUDE.md`) dan daftar tugas (`TASKS.md`) |
+| `bisnis/` | hitungan biaya modul rak IoT |
 | `public/` | aset statis, ikon PWA, service worker |
 
 ## Pengaman yang gampang terlanggar
 
-Tiga hal ini bukan preferensi gaya — melanggarnya merusak perilaku yang sudah
+Empat hal ini bukan preferensi gaya — melanggarnya merusak perilaku yang sudah
 terbukti jalan. Rinciannya ada di `vibe/CLAUDE.md`, diringkas di sini kalau-kalau
 berkas itu tidak ikut terbaca:
 
 1. Trigger `riwayat_status` — dipakai cron untuk menghitung H+1/H+3/H+7
 2. `unique (pesanan_id, jenis)` di `notifikasi_log` — penahan kiriman WhatsApp dobel
 3. Fungsi `normalisasi_hp()` — mencegah satu pelanggan terdaftar berkali-kali
+4. Trigger `jaga_hak_pengguna` — menahan akun laundry mengangkat dirinya jadi
+   `SUPER_ADMIN`. Fungsinya wajib tetap *security invoker*.
 
 Secret key Supabase tidak boleh dipakai di client atau diberi prefix
 `NEXT_PUBLIC_`. Rute `api/cron` dan `api/rak` sengaja dikecualikan dari proxy

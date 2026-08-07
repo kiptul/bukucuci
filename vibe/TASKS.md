@@ -1,71 +1,96 @@
 # TASKS — Kelar
 
-## Cara Kerja (WAJIB DIIKUTI)
+## Cara Kerja
 
-1. Kerjakan **satu tugas saja** per giliran. Jangan lompat, jangan gabung dua tugas.
-2. Sebelum mulai, sebutkan tugas nomor berapa yang sedang dikerjakan.
-3. Setelah selesai, berhenti dan laporkan. Tunggu konfirmasi sebelum lanjut ke tugas berikutnya.
-4. Kalau tugas selesai dan sudah dites, centang kotaknya di file ini.
-5. Jangan mengerjakan apa pun di daftar "JANGAN dibuat" pada `CLAUDE.md`.
-6. Kalau merasa ada yang perlu ditambahkan di luar daftar ini — tanya dulu, jangan langsung kerjakan.
-
-Setelah tiap tugas selesai, jalankan:
+1. Kerjakan satu tugas per giliran. Sebutkan nomornya sebelum mulai.
+2. Selesai berarti sudah dites, bukan sudah ditulis. Centang setelah dites.
+3. Kalau menemukan yang perlu dikerjakan di luar daftar ini — tambahkan ke
+   bagian bawah dulu, jangan langsung kerjakan.
+4. Jangan mengerjakan apa pun di "Yang sengaja tidak dibuat" pada `CLAUDE.md`.
 
 ```bash
-git add -A && git commit -m "tugas N: <nama tugas>"
+git add -A && git commit -m "<ringkasan singkat>"
 ```
 
-## Tahap 1 — Fondasi
+## Sudah jalan
 
-- [x] **1. Verifikasi koneksi Supabase**
-  Pastikan `.env.local` terbaca dan client Supabase berfungsi. Selesai kalau: halaman utama bisa memanggil `supabase.from("layanan").select()` tanpa error koneksi. Hasil `data: []` (kosong karena RLS) sudah dianggap benar.
+Alur inti sudah terpasang dan terpakai: login, input order lewat nomor HP,
+daftar order + pencarian + filter, ubah status `MASUK → SIAP → DIAMBIL`,
+kirim WhatsApp otomatis saat `SIAP` dan `DIAMBIL`, reminder H+1/H+3/H+7 lewat
+cron harian, mode berdampingan (`DARI_BUKU`), penanda lunas/belum bayar, PWA,
+konsol superadmin, dan modul rak IoT.
 
-- [x] **2. Halaman login**
-  Email + password via Supabase Auth. Ada middleware yang menjaga sesi dan mengarahkan user belum login ke `/login`. Selesai kalau: bisa login pakai user yang sudah dibuat di Supabase, lalu diarahkan ke `/dashboard`. Logout juga berfungsi.
+## Menuju siap pakai banyak laundry
 
-- [x] **3. Layout dashboard**
-  Kerangka halaman setelah login: header (nama laundry + tombol logout) dan navigasi bawah untuk mobile (Order Baru · Daftar Order). Selesai kalau: tampil rapi di layar HP (lebar 375px) tanpa scroll horizontal.
+- [x] **1. Jalankan `database/jaga_hak_pengguna.sql` di Supabase**
+  Menutup celah akun laundry mengangkat dirinya sendiri jadi `SUPER_ADMIN`.
+  Terpasang 7 Agustus 2026. Terverifikasi dua lapis: trigger terdaftar di
+  `pg_trigger` (`tgenabled` = `O`), dan percobaan naik pangkat dari sesi yang
+  menyamar sebagai akun laundry ditolak dengan "Peran tidak bisa diubah dari
+  sesi login biasa."
 
-- [x] **4. Daftar layanan tampil**
-  Tarik data dari tabel `layanan` dan tampilkan. Selesai kalau: 3 layanan contoh muncul di layar setelah login. Ini bukti RLS dan relasi `pengguna → laundry` sudah benar.
+  Sisa satu pemastian: konsol superadmin **masih** bisa membuat akun laundry
+  baru (membuktikan allowlist `service_role` tidak ikut terpagari). Hanya bisa
+  diuji lewat UI `/admin`, tidak lewat SQL.
 
-## Tahap 2 — Inti Order
+- [ ] **2. Ganti isi `.env.example` jadi placeholder**
+  Sekarang berisi URL project dan publishable key sungguhan. Key itu memang
+  dirancang publik dan dijaga RLS, jadi ini bukan kebocoran — tapi repo ini
+  publik dan berkas contoh seharusnya tidak memancing orang memakai project
+  orang lain. Selesai kalau: semua nilai jadi placeholder dan README
+  menjelaskan cara mengisinya.
 
-- [x] **5. Form input order**
-  Alur: ketik nomor HP → kalau pelanggan sudah ada, nama terisi otomatis; kalau belum, minta nama → pilih layanan → isi qty → total dihitung otomatis → simpan. Kode order dibuat otomatis. Selesai kalau: order tersimpan di tabel `pesanan` + `pesanan_item`, dan `riwayat_status` otomatis terisi status `MASUK` oleh trigger.
+- [ ] **3. Uji isolasi antar-laundry**
+  Dua laundry, dua akun. Pastikan akun laundry A tidak bisa membaca atau
+  mengubah apa pun milik laundry B — lewat UI *dan* lewat PostgREST langsung
+  dengan publishable key. Uji semua tabel, termasuk `pesanan_item`,
+  `riwayat_status`, `notifikasi_log`, `rak_slot`. Selesai kalau: setiap
+  percobaan lintas laundry mengembalikan kosong atau ditolak.
 
-- [x] **6. Daftar order**
-  Tampilkan order terbaru di atas. Ada pencarian berdasarkan nama, nomor HP, atau kode order. Ada filter status. Selesai kalau: order yang dibuat di tugas 5 muncul, dan pencarian berfungsi.
+- [ ] **4. Tangani kegagalan Fonnte**
+  Sekarang belum jelas apa yang terjadi kalau Fonnte mati, token kedaluwarsa,
+  atau nomor pelanggan tidak sah. Tentukan: apakah statusnya tetap berubah
+  kalau pesan gagal, apakah kasir diberi tahu, dan apakah ada cara mengirim
+  ulang. Selesai kalau: token sengaja dibuat salah, dan aplikasi tetap jalan
+  dengan pesan yang jelas ke kasir.
 
-- [x] **7. Detail order + ubah status**
-  Halaman detail berisi info order dan tombol untuk mengubah status: `MASUK → SIAP → DIAMBIL`. Ada juga tombol `BATAL`. Selesai kalau: status berubah dan tercatat di `riwayat_status` beserta waktunya.
+- [ ] **5. Kelola akun laundry dari konsol superadmin**
+  Sekarang akun bisa dibuat. Lengkapi yang dibutuhkan untuk pemakaian nyata:
+  reset password saat pemilik laundry lupa, nonaktifkan akun laundry yang
+  berhenti berlangganan, dan hapus laundry beserta datanya kalau diminta.
+  Semua lewat `pastikanSuperAdmin()`.
 
-## Tahap 3 — WhatsApp (ini nilai jual produk)
+  Ingat modelnya satu akun satu laundry — jangan tergoda menambah manajemen
+  pegawai atau pemindahan orang antar laundry.
 
-- [x] **8. Fungsi kirim WhatsApp**
-  Buat helper `kirimWA()` yang memanggil API Fonnte, lalu mencatat hasilnya ke `notifikasi_log`. Ambil isi pesan dari `template_pesan`, ganti `{nama}` dan `{kode}`. Selesai kalau: ada tombol tes yang berhasil mengirim 1 pesan ke nomor sendiri, dan barisnya tercatat di `notifikasi_log` dengan status `TERKIRIM`.
+- [ ] **6. Rampungkan modul rak IoT**
+  Firmware dan endpoint sudah ada. Yang kurang: apa yang terjadi kalau ESP32
+  mati atau token salah, cara memasang perangkat kedua, dan panduan pasang
+  untuk orang yang bukan penulis kodenya. Selesai kalau: `perangkat/README.md`
+  cukup untuk memasang dari nol tanpa bertanya.
 
-- [x] **9. Kirim otomatis saat status SIAP**
-  Sambungkan perubahan status ke `kirimWA()`. Selesai kalau: klik tombol SIAP → pesan masuk ke HP. Klik dua kali tidak mengirim pesan dobel (dijaga oleh unique constraint).
+- [ ] **7. Tes otomatis untuk bagian yang mahal kalau salah**
+  Belum ada tes sama sekali. Prioritaskan yang diam-diam merusak:
+  `normalisasiHp()`, `tahapReminder()`, `isiTemplate()`, dan penjaga kirim
+  dobel di `notifikasi_log`. Tidak perlu meliputi seluruh UI.
 
-- [x] **10. Pesan terima kasih saat DIAMBIL**
-  Sama seperti tugas 9, tapi untuk status `DIAMBIL`. Selesai kalau: pesan terima kasih terkirim dan tercatat di log.
+- [ ] **8. README untuk yang memasang, bukan yang menulis**
+  Sekarang README menjelaskan struktur folder. Yang dibutuhkan: urutan
+  menjalankan berkas SQL, cara membuat superadmin pertama, cara mengisi env
+  di Vercel, dan cara memasang cron. Selesai kalau: orang lain bisa memasang
+  Kelar dari nol hanya dengan README.
 
-- [x] **11. Reminder terjadwal H+1, H+3, H+7**
-  Buat route yang bisa dipanggil cron: cari order berstatus `SIAP` yang waktunya sudah lewat 1/3/7 hari (baca dari `riwayat_status`), lalu kirim reminder yang belum pernah dikirim. Selesai kalau: route bisa dipanggil manual dan mengirim reminder yang tepat. Dipanggil dua kali tidak mengirim dobel. Setelah itu daftarkan di `vercel.json` sebagai cron harian.
+## Ditemukan sambil jalan
 
-## Tahap 4 — Pembeda & Finishing
+Tulis di sini kalau menemukan sesuatu di luar daftar, supaya tidak hilang dan
+tidak juga langsung dikerjakan.
 
-- [x] **12. Mode berdampingan**
-  Di form order, ada opsi "Order lama dari buku": bisa mengisi tanggal masuk secara manual dan menandai `sumber = 'DARI_BUKU'`. Di daftar order, order seperti ini diberi penanda visual. Selesai kalau: bisa memasukkan order lama bertanggal mundur, dan penandanya terlihat jelas di daftar. Ini fitur pembeda utama, jangan dilewat.
+- **7 Agu 2026 — `/admin` belum pernah bisa dibuka.** Tabel `pengguna` tidak
+  punya baris `SUPER_ADMIN`, dan akun auth-nya pun belum pernah dibuat. Commit
+  `eda9d2c` hanya jadi separuh: bagian superadmin di `setup_akun.sql` gagal
+  diam-diam karena join ke `auth.users` tidak dapat baris. `setup_akun.sql`
+  sekarang berhenti dengan galat kalau ini terulang.
 
-- [x] **13. PWA**
-  Tambahkan `manifest.json`, ikon, meta tag, dan service worker minimal. Selesai kalau: di Chrome Android muncul opsi "Add to Home Screen", dan saat dibuka tampil layar penuh tanpa address bar.
-
-- [x] **14. Data demo + rapikan tampilan**
-  Isi 8-10 order contoh dengan status beragam dan tanggal yang masuk akal. Rapikan spasi, ukuran font, dan status kosong. Selesai kalau: aplikasi terlihat seperti sudah dipakai beberapa hari, siap direkam untuk video demo.
-
-## Catatan
-
-- Tugas 8 dan 9 adalah inti video demo. Adegan kuncinya: klik SIAP di layar, lalu notifikasi WhatsApp masuk di HP. Pastikan bagian ini mulus.
-- Kalau waktu mepet, yang boleh dikorbankan: tugas 13 dan 14. Yang tidak boleh dikorbankan: tugas 5-12.
+  Konsekuensinya, seluruh konsol superadmin — termasuk pembuatan akun laundry
+  yang jadi satu-satunya pintu pendaftaran — **belum pernah teruji sama sekali**.
+  Uji menyeluruh begitu akun superadmin-nya ada.

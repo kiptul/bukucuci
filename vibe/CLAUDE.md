@@ -2,17 +2,9 @@
 
 Aplikasi pencatatan order laundry + notifikasi WhatsApp otomatis.
 
-## Konteks Penting
-
-Ini karya lomba **GEMASTIK 2026 Divisi XI (Pengembangan Bisnis TIK)**.
-**Deadline: 10 Agustus 2026.**
-
-Yang dinilai juri: Problem 20%, Pasar 20%, Pitch Deck 20%, **Produk hanya 10%**.
-Artinya: aplikasi ini **tidak perlu lengkap**. Cukup jalan mulus untuk direkam
-jadi video demo 3-5 menit. Prioritaskan yang kelihatan di video.
-
-**Jangan menambah fitur di luar daftar "Scope" di bawah**, sekalipun terlihat
-berguna. Waktu lebih berharga daripada kelengkapan.
+Sasarannya perangkat lunak yang dipakai laundry sungguhan tiap hari, bukan
+purwarupa demo. Kalau ragu antara "cepat selesai" dan "aman dipakai orang
+lain", pilih yang kedua.
 
 ## Posisi Produk (memengaruhi keputusan desain)
 
@@ -29,21 +21,49 @@ Referensi model: Khatabook (India) & BukuWarung (Indonesia).
 
 Konsekuensi ke produk:
 - **Mode berdampingan** — pemilik boleh tetap pakai buku; order lama bisa
-  diinput belakangan (`pesanan.sumber = 'DARI_BUKU'`). Ini fitur pembeda utama,
-  wajib ada dan wajib kelihatan di demo.
+  diinput belakangan (`pesanan.sumber = 'DARI_BUKU'`). Ini fitur pembeda utama.
 - **Mobile-first.** Kasir laundry kemungkinan hanya punya HP Android murah.
-  Desain untuk layar kecil dulu. Tombol besar, form pendek.
-- **Tanpa printer.** Nota dikirim sebagai link/pesan WhatsApp, bukan cetak thermal.
+  Desain untuk layar kecil dulu. Tombol besar (sasaran sentuh minimal 3rem),
+  form pendek.
+- **Tanpa printer.** Nota dikirim sebagai link/pesan WhatsApp, bukan cetak
+  thermal.
 - Nomor HP adalah pintu masuk order, bukan field tambahan. Alur input:
   ketik nomor HP → kalau sudah ada, data pelanggan terpanggil; kalau belum,
   buat baru → lanjut pilih layanan.
+
+## Dua peran saja
+
+| Peran | `laundry_id` | Artinya |
+|---|---|---|
+| `SUPER_ADMIN` | NULL | pengelola Kelar. Melihat dan mengurus semua laundry lewat `/admin`. |
+| `LAUNDRY` | terisi | akun milik satu laundry. **Satu laundry tepat satu akun.** |
+
+`LAUNDRY` adalah akun laundry-nya, bukan jabatan seseorang. Tidak ada hierarki
+pemilik/kasir dan tidak ada pembagian hak per orang. Batasan satu akun ditegakkan
+oleh unique index `idx_pengguna_satu_akun_per_laundry`, bukan cuma oleh kebiasaan
+— jadi konsol admin menyembunyikan formulir pembuatan akun begitu laundry sudah
+punya satu.
+
+Jangan membangun manajemen pegawai, pembagian hak per orang, atau jejak "siapa
+mengubah apa". Semuanya memecahkan masalah yang tidak ada di model ini.
+
+## Banyak laundry, satu pintu pendaftaran
+
+Satu pasang aplikasi melayani banyak laundry sekaligus, dipisah oleh
+`laundry_id` dan dijaga RLS. Tapi **tidak ada pendaftaran mandiri**: akun hanya
+dibuat lewat konsol superadmin di `/admin`. Jangan membangun halaman daftar,
+verifikasi email, atau alur lupa password tanpa diminta — ketiadaannya
+disengaja, bukan pekerjaan yang belum selesai.
+
+Artinya juga: jangan menaruh tautan yang mengesankan hal-hal itu ada. Elemen
+yang tidak berfungsi lebih buruk daripada elemen yang tidak ada.
 
 ## Stack
 
 - Next.js (App Router) + TypeScript + Tailwind
 - Supabase (PostgreSQL + Auth), RLS aktif di semua tabel
 - Deploy: Vercel
-- WhatsApp gateway: Fonnte (HTTP POST, non-resmi — cukup untuk lomba)
+- WhatsApp gateway: Fonnte (HTTP POST, non-resmi)
 - PWA (manifest + service worker minimal), bukan APK
 
 Env var (pakai penamaan bawaan Supabase, jangan diubah):
@@ -53,11 +73,12 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ```
 
 ⚠️ Secret key Supabase TIDAK BOLEH dipakai di client atau diberi prefix
-`NEXT_PUBLIC_`. Semua akses data lewat RLS.
+`NEXT_PUBLIC_`. Ia hanya boleh disentuh di balik `pastikanSuperAdmin()`.
 
 ## Database
 
-Schema sudah dibuat di Supabase (lihat `database/schema_laundry.sql`). 9 tabel:
+Schema di `database/schema_laundry.sql`, ditambah `rak_slot.sql` dan
+`jaga_hak_pengguna.sql`. Semua dijalankan manual di Supabase SQL Editor.
 
 | Tabel | Catatan |
 |---|---|
@@ -65,47 +86,70 @@ Schema sudah dibuat di Supabase (lihat `database/schema_laundry.sql`). 9 tabel:
 | `pengguna` | terhubung ke `auth.users`, punya `laundry_id` & `peran` |
 | `pelanggan` | `no_hp` unik per laundry, **auto-normalisasi ke format 62...** |
 | `layanan` | nama, satuan (kg/pcs), harga |
-| `pesanan` | punya `sumber` (BARU/DARI_BUKU) dan `slot_rak` (belum dipakai) |
+| `pesanan` | punya `sumber` (BARU/DARI_BUKU) dan `slot_rak` |
 | `pesanan_item` | snapshot `nama_layanan` & harga |
 | `riwayat_status` | **terisi otomatis via trigger** tiap status berubah |
 | `notifikasi_log` | `unique (pesanan_id, jenis)` — pengaman anti kirim dobel |
 | `template_pesan` | teks pesan per jenis, placeholder `{nama}` dan `{kode}` |
+| `rak_slot`, `rak_perangkat` | modul rak IoT |
 
 Enum status pesanan: `MASUK` → `SIAP` → `DIAMBIL` (+ `BATAL`).
-
-Tiga hal yang jangan diubah tanpa alasan kuat:
-1. Trigger `riwayat_status` — dipakai cron untuk hitung H+1/H+3/H+7
-2. `unique (pesanan_id, jenis)` di `notifikasi_log` — kalau dilepas, cron bisa
-   spam pelanggan dan nomor WhatsApp bisa diblokir
-3. Fungsi `normalisasi_hp()` — mencegah satu pelanggan terdaftar berkali-kali
 
 RLS memakai fungsi `laundry_saya()` yang membaca `laundry_id` dari tabel
 `pengguna` berdasarkan `auth.uid()`.
 
-## Scope — HANYA INI
+## Empat pengaman yang jangan diubah tanpa alasan kuat
 
-- [ ] Login (email + password, Supabase Auth)
-- [ ] Input order: nomor HP → nama → layanan → qty → total
-- [ ] Daftar order + pencarian (nama / nomor HP / kode)
-- [ ] Ubah status: MASUK → SIAP → DIAMBIL
-- [ ] Kirim WhatsApp otomatis saat status jadi SIAP
-- [ ] Reminder terjadwal H+1, H+3, H+7 (cron)
-- [ ] Pesan terima kasih otomatis saat status jadi DIAMBIL
-- [ ] Mode berdampingan: input order lama dari buku
-- [ ] PWA (installable ke home screen)
+1. **Trigger `riwayat_status`** — dipakai cron untuk hitung H+1/H+3/H+7
+2. **`unique (pesanan_id, jenis)` di `notifikasi_log`** — kalau dilepas, cron
+   bisa spam pelanggan dan nomor WhatsApp bisa diblokir
+3. **Fungsi `normalisasi_hp()`** — mencegah satu pelanggan terdaftar berkali-kali
+4. **Trigger `jaga_hak_pengguna`** — mencegah pengguna mengubah `peran` miliknya
+   sendiri jadi `SUPER_ADMIN`. Tanpa ini, satu akun laundry bisa mengambil alih data
+   seluruh laundry. Fungsinya wajib tetap *security invoker*; menambahkan
+   `security definer` membuatnya lolos diam-diam. Baca komentarnya sebelum
+   menyentuh.
 
-## JANGAN dibuat
+## Yang sengaja tidak dibuat
 
-Laporan keuangan, dashboard omzet, grafik, cetak nota thermal, manajemen
-multi-user/role, halaman tracking untuk pelanggan, status cuci & setrika
-terpisah, fitur IoT rak, multi-cabang, ekspor Excel, dark mode.
+Laporan keuangan, dashboard omzet, grafik, cetak nota thermal, halaman tracking
+untuk pelanggan, status cuci & setrika terpisah, multi-cabang, ekspor Excel,
+dark mode, pendaftaran mandiri.
 
-Semua itu masuk slide roadmap, bukan kode.
+Kalau salah satunya terasa perlu, tanya dulu — jangan langsung kerjakan.
+
+## Bahasa Visual
+
+Metafornya **nota kertas**, dan itu bukan tempelan: `--color-kertas` /
+`--color-tinta`, butiran serat kertas di `body::after`, garis titik-titik
+`.penghubung` seperti daftar harga di nota cetak, dan `.tepi-sobek` — tepi
+robek di dasar kartu yang mengulang bentuk ikon aplikasi.
+
+Konsekuensinya, dan ini gampang dilanggar tanpa sadar:
+- **Sudut siku.** Jangan menambah `rounded-lg`, `rounded-2xl`, dan sejenisnya.
+  Satu-satunya pembulatan yang ada `rounded-[2px]` di rangka pemuatan.
+- **Mono untuk label, kode order, angka, dan status** — huruf kecil-kapital
+  berjarak lebar. Sans untuk kalimat.
+- Aksen `--color-aksen` dipakai hemat: garis pendek, titik, cincin fokus.
+- Gerak pendek (0.08–0.18s) dan `prefers-reduced-motion` dihormati.
+
+Sebelum menambah gaya baru, cari dulu apakah bahasanya sudah ada. Halaman yang
+memakai kosakata visual sendiri membuat aplikasi terasa seperti tambal sulam.
 
 ## Gaya Kode
 
-- Penamaan tabel/kolom database: **bahasa Indonesia** (sudah terlanjur, konsisten saja)
+- Penamaan tabel/kolom database: **bahasa Indonesia** (sudah terlanjur,
+  konsisten saja)
 - Komentar & pesan UI: bahasa Indonesia
 - Utamakan Server Component; pakai `"use client"` hanya untuk bagian interaktif
 - Mutasi data pakai Server Actions
 - Jangan install library UI baru — cukup Tailwind
+- Komentar menjelaskan **kenapa**, bukan apa. Kalau ada keputusan yang pernah
+  bikin bug halus, tulis bugnya di komentar (lihat `proxy.ts` dan `sw.js`).
+
+## Menulis teks antarmuka
+
+- Sebut apa yang terjadi dan langkah berikutnya. Pesan galat tidak minta maaf
+  dan tidak samar.
+- Kata kerja aktif, satu nama untuk satu tindakan dari awal sampai akhir alur.
+- Layar kosong adalah ajakan bertindak, bukan pemberitahuan bahwa kosong.
