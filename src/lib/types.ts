@@ -1,4 +1,6 @@
-export type PeranPengguna = "SUPER_ADMIN" | "PETUGAS";
+// LAUNDRY = akun milik satu laundry, bukan jabatan seseorang. Satu laundry
+// hanya boleh punya satu akun (lihat database/peran_laundry.sql).
+export type PeranPengguna = "SUPER_ADMIN" | "LAUNDRY";
 export type StatusPesanan = "MASUK" | "SIAP" | "DIAMBIL" | "BATAL";
 export type StatusPembayaran = "BELUM" | "LUNAS";
 export type SumberPesanan = "BARU" | "DARI_BUKU";

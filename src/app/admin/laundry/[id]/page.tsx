@@ -23,14 +23,20 @@ export default async function DetailLaundry({
 
   if (!laundry) notFound();
 
-  const [{ data: layanan }, { data: petugas }, { count: jumlahOrder }] =
+  const [{ data: layanan }, { data: akun }, { count: jumlahOrder }] =
     await Promise.all([
       db
         .from("layanan")
         .select("id, nama, satuan, harga, aktif")
         .eq("laundry_id", id)
         .order("created_at"),
-      db.from("pengguna").select("id, nama, peran").eq("laundry_id", id),
+      // maybeSingle, bukan daftar: satu laundry hanya boleh punya satu akun,
+      // dijaga unique index idx_pengguna_satu_akun_per_laundry.
+      db
+        .from("pengguna")
+        .select("id, nama")
+        .eq("laundry_id", id)
+        .maybeSingle(),
       db
         .from("pesanan")
         .select("id", { count: "exact", head: true })
@@ -153,83 +159,84 @@ export default async function DetailLaundry({
 
       <section>
         <h2 className="mb-1 border-b border-garis pb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-tinta-2">
-          Petugas
+          Akun laundry
         </h2>
-        {!petugas?.length ? (
-          <p className="py-6 text-sm text-tinta-3">
-            Belum ada petugas. Tanpa akun, laundry ini tidak bisa dipakai.
-          </p>
-        ) : (
-          <ul className="divide-y divide-garis">
-            {petugas.map((p) => (
-              <li
-                key={p.id}
-                className="flex items-baseline justify-between gap-3 py-3"
-              >
-                <span className="font-medium">{p.nama ?? "—"}</span>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-tinta-3">
-                  {p.peran}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
 
-        <div className="mt-5 border border-garis bg-white p-5">
-          <h3 className="mb-4 font-mono text-[11px] uppercase tracking-wider text-tinta-2">
-            Tambah petugas
-          </h3>
-          <FormAdmin
-            aksi={tambahPengguna}
-            saatMenunggu="Membuat akun..."
-            tombol="Buat akun petugas"
-          >
-            <input type="hidden" name="laundry_id" value={id} />
-            <div>
-              <label htmlFor="nama-petugas" className={gayaLabel}>
-                Nama petugas
-              </label>
-              <input
-                id="nama-petugas"
-                name="nama"
-                required
-                autoComplete="off"
-                className={gayaInput}
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className={gayaLabel}>
-                Email untuk login
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                autoComplete="off"
-                className={gayaInput}
-              />
-            </div>
-            <div>
-              <label htmlFor="sandi" className={gayaLabel}>
-                Password awal · minimal 8 karakter
-              </label>
-              <input
-                id="sandi"
-                name="sandi"
-                type="text"
-                required
-                minLength={8}
-                autoComplete="off"
-                className={`${gayaInput} font-mono`}
-              />
-            </div>
-            <p className="text-xs leading-relaxed text-tinta-3">
-              Password ini terlihat supaya bisa langsung diberitahukan ke
-              petugasnya. Minta dia menggantinya setelah masuk.
+        {/* Formulirnya hanya muncul selagi laundry ini belum punya akun.
+            Satu laundry satu akun, jadi menampilkan form "tambah" di sebelah
+            akun yang sudah ada cuma menjanjikan sesuatu yang akan ditolak. */}
+        {akun ? (
+          <div className="mt-5 border border-garis bg-white p-5">
+            <p className="font-medium">{akun.nama ?? "—"}</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-tinta-2">
+              Satu-satunya akun yang bisa membuka laundry ini.
             </p>
-          </FormAdmin>
-        </div>
+          </div>
+        ) : (
+          <>
+            <p className="py-6 text-sm leading-relaxed text-tinta-3">
+              Belum ada akun. Selama belum dibuat, tidak ada yang bisa masuk ke
+              laundry ini.
+            </p>
+
+            <div className="border border-garis bg-white p-5">
+              <h3 className="mb-4 font-mono text-[11px] uppercase tracking-wider text-tinta-2">
+                Buat akun
+              </h3>
+              <FormAdmin
+                aksi={tambahPengguna}
+                saatMenunggu="Membuat akun..."
+                tombol="Buat akun"
+              >
+                <input type="hidden" name="laundry_id" value={id} />
+                <div>
+                  <label htmlFor="nama-akun" className={gayaLabel}>
+                    Nama pemilik
+                  </label>
+                  <input
+                    id="nama-akun"
+                    name="nama"
+                    required
+                    autoComplete="off"
+                    className={gayaInput}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className={gayaLabel}>
+                    Email untuk login
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    autoComplete="off"
+                    className={gayaInput}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="sandi" className={gayaLabel}>
+                    Password awal · minimal 8 karakter
+                  </label>
+                  <input
+                    id="sandi"
+                    name="sandi"
+                    type="text"
+                    required
+                    minLength={8}
+                    autoComplete="off"
+                    className={`${gayaInput} font-mono`}
+                  />
+                </div>
+                <p className="text-xs leading-relaxed text-tinta-3">
+                  Password ini sengaja terlihat supaya bisa langsung
+                  diberitahukan ke pemilik laundry. Minta dia menggantinya
+                  setelah masuk.
+                </p>
+              </FormAdmin>
+            </div>
+          </>
+        )}
       </section>
     </div>
   );

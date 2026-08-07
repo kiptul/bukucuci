@@ -78,6 +78,22 @@ export async function tambahPengguna(_prev: Hasil, formData: FormData): Promise<
   if (!nama) return { error: "Nama wajib diisi." };
   if (!laundryId) return { error: "Pilih laundry dulu." };
 
+  // Satu laundry satu akun. Diperiksa di sini supaya tidak sempat membuat akun
+  // login yang beberapa baris kemudian harus dihapus lagi; batasan sungguhannya
+  // tetap ada di unique index idx_pengguna_satu_akun_per_laundry, karena
+  // pemeriksaan ini bisa kalah balapan dengan dua permintaan bersamaan.
+  const { data: sudahAda } = await db
+    .from("pengguna")
+    .select("nama")
+    .eq("laundry_id", laundryId)
+    .maybeSingle();
+
+  if (sudahAda) {
+    return {
+      error: `Laundry ini sudah punya akun atas nama ${sudahAda.nama ?? "—"}. Hapus akun lama dulu kalau mau menggantinya.`,
+    };
+  }
+
   // Akun login dibuat lewat Admin API — perangkat lunak ini memegang kuasa itu
   // hanya di dalam pagar pastikanSuperAdmin().
   const { data: akun, error: galatAkun } = await db.auth.admin.createUser({
@@ -94,19 +110,27 @@ export async function tambahPengguna(_prev: Hasil, formData: FormData): Promise<
     id: akun.user.id,
     laundry_id: laundryId,
     nama,
-    peran: "PETUGAS",
+    peran: "LAUNDRY",
   });
 
   if (galatBaris) {
     // Jangan tinggalkan akun login yang tidak tertaut ke laundry mana pun —
     // pemiliknya bisa masuk tapi tidak bisa berbuat apa-apa.
     await db.auth.admin.deleteUser(akun.user.id);
-    return { error: "Gagal menautkan akun ke laundry." };
+
+    // 23505 = unique_violation, yaitu balapan yang lolos dari pemeriksaan di
+    // atas: laundry ini keburu dapat akun dari permintaan lain.
+    return {
+      error:
+        galatBaris.code === "23505"
+          ? "Laundry ini baru saja mendapat akun dari permintaan lain."
+          : "Gagal menautkan akun ke laundry.",
+    };
   }
 
   revalidatePath("/admin");
   revalidatePath(`/admin/laundry/${laundryId}`);
-  return { pesan: `Akun ${email} dibuat sebagai petugas.` };
+  return { pesan: `Akun ${email} dibuat untuk laundry ini.` };
 }
 
 export async function tambahLayanan(_prev: Hasil, formData: FormData): Promise<Hasil> {

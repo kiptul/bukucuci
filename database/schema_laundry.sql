@@ -4,7 +4,9 @@
 -- =====================================================
 
 -- ---------- 1. TIPE ENUM ----------
-create type peran_pengguna    as enum ('SUPER_ADMIN', 'PETUGAS');
+-- LAUNDRY = akun milik satu laundry, bukan jabatan seseorang. Database yang
+-- dibuat sebelum database/peran_laundry.sql masih memakai nama lama 'PETUGAS'.
+create type peran_pengguna    as enum ('SUPER_ADMIN', 'LAUNDRY');
 create type status_pesanan    as enum ('MASUK', 'SIAP', 'DIAMBIL', 'BATAL');
 create type status_pembayaran as enum ('BELUM', 'LUNAS');
 create type sumber_pesanan    as enum ('BARU', 'DARI_BUKU');
@@ -56,9 +58,15 @@ create table pengguna (
   id         uuid primary key references auth.users(id) on delete cascade,
   laundry_id uuid references laundry(id) on delete cascade,
   nama       text,
-  peran      peran_pengguna not null default 'PETUGAS',
+  peran      peran_pengguna not null default 'LAUNDRY',
   created_at timestamptz not null default now()
 );
+
+-- Satu laundry satu akun. Parsial supaya baris SUPER_ADMIN, yang laundry_id-nya
+-- NULL, tidak saling bentrok. Lihat database/peran_laundry.sql.
+create unique index idx_pengguna_satu_akun_per_laundry
+  on pengguna (laundry_id)
+  where laundry_id is not null;
 
 create table pelanggan (
   id         uuid primary key default gen_random_uuid(),
@@ -205,6 +213,10 @@ create policy p_laundry on laundry
   for all to authenticated
   using (id = laundry_saya()) with check (id = laundry_saya());
 
+-- Policy ini TIDAK cukup sendirian: `with check` tak bisa membandingkan nilai
+-- lama dengan nilai baru, jadi ia tidak mampu mencegah pengguna mengubah
+-- kolom `peran` miliknya sendiri jadi SUPER_ADMIN. Pagarnya ada di trigger
+-- pada database/jaga_hak_pengguna.sql — berkas itu wajib ikut dijalankan.
 create policy p_pengguna on pengguna
   for all to authenticated
   using (id = auth.uid() or laundry_id = laundry_saya())

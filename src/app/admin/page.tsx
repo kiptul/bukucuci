@@ -23,8 +23,8 @@ export default async function KonsolAdmin() {
 
   const laundry = (data ?? []) as BarisLaundry[];
 
-  // Jumlah order dan petugas per laundry. Dihitung sekali lalu dipetakan,
-  // bukan satu query per baris.
+  // Jumlah order dan ada-tidaknya akun per laundry. Dihitung sekali lalu
+  // dipetakan, bukan satu query per baris.
   const [{ data: pesanan }, { data: pengguna }] = await Promise.all([
     db.from("pesanan").select("laundry_id"),
     db.from("pengguna").select("laundry_id"),
@@ -59,9 +59,16 @@ export default async function KonsolAdmin() {
                 >
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="font-medium leading-snug">{l.nama}</span>
+                    {/* Jumlah akun tidak ditampilkan karena selalu 0 atau 1.
+                        Yang perlu terlihat justru keadaan rusaknya: laundry
+                        tanpa akun tidak bisa dibuka siapa pun. */}
                     <span className="angka shrink-0 font-mono text-[11px] text-tinta-3">
-                      {hitung(pesanan, l.id)} order · {hitung(pengguna, l.id)}{" "}
-                      petugas
+                      {!hitung(pengguna, l.id) && (
+                        <span className="uppercase tracking-wider text-red-800">
+                          tanpa akun ·{" "}
+                        </span>
+                      )}
+                      {hitung(pesanan, l.id)} order
                     </span>
                   </div>
                   <p className="mt-0.5 text-xs text-tinta-3">
