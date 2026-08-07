@@ -8,6 +8,9 @@
 # generated analysis output
 /graphify-out/
 
+# izin Claude Code per-mesin (launch.json tetap ikut, itu setelan bersama)
+/.claude/settings.local.json*
+
 # production
 /build
 
