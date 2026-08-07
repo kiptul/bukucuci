@@ -51,7 +51,8 @@ export default async function HalamanLogin({
         </p>
       </section>
 
-      {/* Bidang form */}
+      {/* Bidang form. Kartunya bersudut siku dan ditutup tepi sobek — bentuk
+          nota yang dirobek dari bandelnya, sama seperti ikon aplikasi. */}
       <section className="flex flex-col justify-center px-6 pb-14 pt-9 md:px-14 md:pt-0">
         <div>
           <div className="border border-garis bg-white px-6 py-7 shadow-[0_24px_50px_-38px_rgba(0,0,0,0.6)] md:px-8">

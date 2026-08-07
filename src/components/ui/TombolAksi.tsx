@@ -14,6 +14,7 @@ export default function TombolAksi({
   saatMenunggu,
   gaya = "utama",
   nonaktif,
+  className,
   onClick,
 }: {
   children: React.ReactNode;
@@ -22,6 +23,7 @@ export default function TombolAksi({
   saatMenunggu: string;
   gaya?: keyof typeof GAYA;
   nonaktif?: boolean;
+  className?: string;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) {
   const { pending } = useFormStatus();
@@ -30,7 +32,7 @@ export default function TombolAksi({
     <button
       onClick={onClick}
       disabled={pending || nonaktif}
-      className={`flex w-full items-center justify-center gap-2 py-3.5 text-sm font-medium disabled:opacity-60 ${GAYA[gaya]}`}
+      className={`flex w-full items-center justify-center gap-2 py-3.5 text-sm font-medium disabled:opacity-60 ${GAYA[gaya]} ${className ?? ""}`}
     >
       {pending && <Putaran />}
       {pending ? saatMenunggu : children}
