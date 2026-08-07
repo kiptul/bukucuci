@@ -33,12 +33,12 @@ konsol superadmin, dan modul rak IoT.
   baru (membuktikan allowlist `service_role` tidak ikut terpagari). Hanya bisa
   diuji lewat UI `/admin`, tidak lewat SQL.
 
-- [ ] **2. Ganti isi `.env.example` jadi placeholder**
-  Sekarang berisi URL project dan publishable key sungguhan. Key itu memang
-  dirancang publik dan dijaga RLS, jadi ini bukan kebocoran — tapi repo ini
-  publik dan berkas contoh seharusnya tidak memancing orang memakai project
-  orang lain. Selesai kalau: semua nilai jadi placeholder dan README
-  menjelaskan cara mengisinya.
+- [x] **2. Ganti isi `.env.example` jadi placeholder**
+  Sebelumnya memuat URL project dan publishable key sungguhan. Keduanya memang
+  dirancang publik dan dijaga RLS, jadi itu bukan kebocoran — tapi repo ini
+  publik dan berkas contoh tidak seharusnya memancing orang memakai project
+  orang lain. Sekarang semuanya placeholder, tiap variabel diberi keterangan
+  asalnya, dan peringatan soal `SUPABASE_SECRET_KEY` ditulis di tempatnya.
 
 - [ ] **3. Uji isolasi antar-laundry**
   Dua laundry, dua akun. Pastikan akun laundry A tidak bisa membaca atau
@@ -74,11 +74,15 @@ konsol superadmin, dan modul rak IoT.
   `normalisasiHp()`, `tahapReminder()`, `isiTemplate()`, dan penjaga kirim
   dobel di `notifikasi_log`. Tidak perlu meliputi seluruh UI.
 
-- [ ] **8. README untuk yang memasang, bukan yang menulis**
-  Sekarang README menjelaskan struktur folder. Yang dibutuhkan: urutan
-  menjalankan berkas SQL, cara membuat superadmin pertama, cara mengisi env
-  di Vercel, dan cara memasang cron. Selesai kalau: orang lain bisa memasang
-  Kelar dari nol hanya dengan README.
+- [x] **8. README untuk yang memasang, bukan yang menulis**
+  `README.md` jadi panduan pasang dari nol: Supabase, env, superadmin pertama,
+  Vercel, dan cron. `database/README.md` baru memuat urutan lima berkas SQL
+  beserta jebakannya — terutama bahwa `peran_laundry.sql` adalah migrasi yang
+  akan gagal di database baru, dan bahwa `setup_akun.sql` masih memuat email
+  demo yang harus diganti.
+
+  Belum diuji orang lain memasang dari nol. Itu baru bisa dinilai kalau ada
+  yang benar-benar mencobanya tanpa bertanya.
 
 ## Ditemukan sambil jalan
 
