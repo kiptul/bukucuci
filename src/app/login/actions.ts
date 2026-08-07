@@ -7,15 +7,24 @@ export async function masuk(
   _prev: { error: string } | null,
   formData: FormData
 ): Promise<{ error: string } | null> {
+  // Nama field-nya "sandi", seragam dengan form lain di proyek ini. Jangan
+  // diselaraskan dengan nama parameter Supabase di bawah — keduanya kebetulan
+  // berdekatan artinya, tapi yang satu milik markup kita dan yang satu milik
+  // pustaka. Pernah tertukar sekali, dan gejalanya "Email dan password wajib
+  // diisi." padahal keduanya terisi: FormData tidak bertipe, jadi TypeScript,
+  // lint, maupun build sama sekali tidak menangkapnya.
   const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
+  const sandi = String(formData.get("sandi") ?? "");
 
-  if (!email || !password) {
+  if (!email || !sandi) {
     return { error: "Email dan password wajib diisi." };
   }
 
   const db = await supabaseServer();
-  const { error } = await db.auth.signInWithPassword({ email, password });
+  const { error } = await db.auth.signInWithPassword({
+    email,
+    password: sandi,
+  });
 
   if (error) {
     return { error: "Email atau password salah." };
