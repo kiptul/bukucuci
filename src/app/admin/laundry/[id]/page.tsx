@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import FormAdmin, { gayaInput, gayaLabel } from "@/components/forms/FormAdmin";
+import FormAdmin from "@/components/forms/FormAdmin";
+import { gayaInput, gayaLabel } from "@/components/forms/gaya";
 import { pastikanSuperAdmin } from "@/lib/admin";
 import { hpCantik, rupiah } from "@/lib/format";
 import {

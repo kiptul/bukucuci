@@ -4,11 +4,10 @@ import { useActionState } from "react";
 import TombolAksi from "@/components/ui/TombolAksi";
 import type { Hasil } from "@/app/admin/actions";
 
-export const gayaInput =
-  "w-full border border-garis bg-white px-3.5 py-2.5 text-base outline-none focus:border-aksen focus:ring-1 focus:ring-aksen";
-
-export const gayaLabel =
-  "mb-1.5 block font-mono text-[11px] uppercase tracking-wider text-tinta-2";
+// Kelas isian pindah ke gaya.ts — modul biasa, bukan "use client". Jangan
+// dikembalikan ke sini: Server Component yang mengimpornya dari modul klien
+// mendapat rujukan, bukan string, dan interpolasinya menghasilkan sampah.
+// Alasan lengkapnya ada di berkas itu.
 
 // Kerangka bersama semua form di konsol admin: menjalankan action, menampilkan
 // pesan berhasil atau gagal, dan mengosongkan isian setelah berhasil.

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import FormAdmin, { gayaInput, gayaLabel } from "@/components/forms/FormAdmin";
+import FormAdmin from "@/components/forms/FormAdmin";
+import { gayaInput, gayaLabel } from "@/components/forms/gaya";
 import { getProfil } from "@/lib/profil";
 import { simpanLayanan, tambahLayanan } from "../actions";
 
