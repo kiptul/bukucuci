@@ -7,6 +7,12 @@
 
 #pragma once
 
+// Hanya bekal awal, dipakai sekali saat flash papan masih kosong. Begitu papan
+// pernah tersambung, setelannya tersimpan di flash dan dua baris ini tidak
+// dibaca lagi — menggantinya di sini tidak akan berpengaruh. Untuk mengganti
+// WiFi, pakai halaman rak atau portal "Kelar-Rak"; lihat README.
+//
+// Boleh dikosongkan: papan akan langsung membuka portal saat pertama menyala.
 #define WIFI_SSID_RAHASIA    "GANTI_NAMA_WIFI"
 #define WIFI_PASS_RAHASIA    "GANTI_PASSWORD_WIFI"
 

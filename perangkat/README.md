@@ -134,6 +134,48 @@ pio run -t upload && pio device monitor
 Kalau upload gagal dengan `Permission denied`, akun belum masuk grup
 `dialout` — jalankan `sudo usermod -aG dialout $USER` lalu logout–login.
 
+## Mengganti WiFi (varian ESP8266)
+
+WiFi di `rahasia.h` **hanya bekal awal**, dipakai sekali saat flash papan masih
+kosong. Setelah papan pernah tersambung, setelannya tersimpan di flash dan
+`rahasia.h` tidak lagi dibaca. Mengganti WiFi tidak perlu colok laptop.
+
+Ada dua jalur, dan keduanya ada karena keadaannya berbeda.
+
+### Kalau WiFi belum berganti — titipkan dari aplikasi
+
+Selagi papan masih online: halaman rak → **WiFi perangkat** → isi nama dan sandi
+jaringan baru → **Titipkan setelan baru**. Papan mengambilnya pada kabar
+berikutnya (paling lama 30 detik), pindah, lalu menyalakan ulang.
+
+Perpindahan dinyatakan berhasil hanya setelah papan melapor dari jaringan
+tujuan — bukan saat titipan terkirim. Saat titipan dikirim, papan masih berada
+di jaringan lama, jadi balasan 200 tidak membuktikan apa pun.
+
+Gagal 3 kali berturut-turut, titipan dibatalkan sendiri dan alasannya muncul di
+halaman rak. Batas itu memutus lingkaran yang muncul kalau sandinya salah
+ketik: papan gagal → jatuh ke portal → diperbaiki lewat portal → titipan yang
+salah dikirim lagi → putus lagi.
+
+### Kalau WiFi sudah terlanjur berganti — portal di papan
+
+Papan yang gagal menyambung memancarkan WiFi bernama **`Kelar-Rak`**.
+
+1. Sambungkan HP ke `Kelar-Rak`
+2. Halaman setelan terbuka sendiri. Kalau tidak, buka `192.168.4.1`
+3. Pilih WiFi baru, isi sandinya, simpan
+4. Papan menyambung ulang dan kembali melapor
+
+Portal menutup sendiri setelah 3 menit tanpa ada yang mengaturnya, lalu papan
+menyalakan ulang dan mencoba lagi — supaya gangguan WiFi sesaat tidak berujung
+papan tersangkut di mode portal sampai ada orang yang kebetulan lewat.
+
+### Kalau keduanya gagal
+
+Jalur terakhir tetap ada: isi `rahasia.h`, hapus kredensial tersimpan, flash
+ulang. Menghapus yang tersimpan bisa lewat `pio run -t erase` (menghapus seluruh
+flash, termasuk setelan WiFi) lalu upload lagi.
+
 ## Pengujian Bertahap
 
 Uji satu per satu, jangan langsung semua:
