@@ -27,13 +27,23 @@ function hariIniJakarta(): string {
 
 type StatusPelanggan = "kosong" | "mencari" | "terdaftar" | "baru";
 
-export default function FormOrder({ layanan }: { layanan: Layanan[] }) {
+export default function FormOrder({
+  layanan,
+  dariBukuAwal = false,
+}: {
+  layanan: Layanan[];
+  // Dinyalakan lewat /order/baru?buku=1, dipakai layar kosong dashboard yang
+  // menawarkan "Order lama dari buku" sebagai jalan masuk tersendiri. Tanpa
+  // ini tombol itu mendarat di form yang sama tanpa mencentang apa pun —
+  // tombol yang menjanjikan sesuatu yang tidak ia lakukan.
+  dariBukuAwal?: boolean;
+}) {
   const [state, aksi] = useActionState(simpanOrder, null);
 
   const [noHp, setNoHp] = useState("");
   const [namaKetik, setNamaKetik] = useState("");
   const [qty, setQty] = useState<Record<string, string>>({});
-  const [dariBuku, setDariBuku] = useState(false);
+  const [dariBuku, setDariBuku] = useState(dariBukuAwal);
   const hariIni = hariIniJakarta();
   // Hasil pencarian disimpan bersama nomor yang dicari, supaya status bisa
   // diturunkan dari state — bukan di-set dari dalam effect.

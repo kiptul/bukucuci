@@ -94,8 +94,20 @@ export default async function Dashboard({
     );
   }
 
-  const { data } = await kueri;
+  // Galatnya ditangkap, bukan diabaikan. Sebelumnya kegagalan kueri hanya
+  // menghasilkan data kosong, jadi sambungan yang putus tampil persis sama
+  // dengan laundry yang memang belum punya order — dan kasir diajak mencatat
+  // order pertama padahal ordernya ada, cuma tidak terambil.
+  const { data, error: galat } = await kueri;
   const pesanan = (data ?? []) as unknown as BarisPesanan[];
+
+  const menyaring = Boolean(cari) || statusAktif !== "SEMUA";
+
+  // Menghapus pencarian tidak ikut menghapus saringan status: kasir yang
+  // sedang melihat "Siap" lalu mencari nama biasanya masih ingin melihat
+  // "Siap" setelah pencariannya dibatalkan.
+  const tanpaCari =
+    statusAktif !== "SEMUA" ? `/dashboard?status=${statusAktif}` : "/dashboard";
 
   return (
     <div className="pb-2">
@@ -109,33 +121,96 @@ export default async function Dashboard({
           </span>
         </div>
 
-        {!pesanan.length ? (
-          <div className="px-4 py-10 text-center">
-            {cari || statusAktif !== "SEMUA" ? (
-              <p className="text-sm text-tinta-3">
-                Tidak ada order yang cocok.
-              </p>
-            ) : (
-              <>
-                <p className="text-sm text-tinta-2">
-                  Belum ada order tercatat.
-                </p>
-                <Link
-                  href="/order/baru"
-                  className="mt-4 inline-block bg-tinta px-5 py-3 text-sm font-medium text-kertas active:bg-tinta-2"
-                >
-                  Catat order pertama
-                </Link>
-              </>
-            )}
+        {galat ? (
+          <div className="mx-4 mt-8 border border-red-800/40 bg-red-50 px-5 py-6 md:mx-6">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-red-900">
+              Gagal memuat
+            </p>
+            <p className="mt-2.5 text-sm leading-relaxed text-red-950">
+              Daftar order tidak terambil karena sambungan terputus. Order yang
+              sudah tercatat aman di server.
+            </p>
+            <Link
+              href={
+                cari || statusAktif !== "SEMUA"
+                  ? `/dashboard?${new URLSearchParams({
+                      ...(cari ? { q: cari } : {}),
+                      ...(statusAktif !== "SEMUA"
+                        ? { status: statusAktif }
+                        : {}),
+                    })}`
+                  : "/dashboard"
+              }
+              className="mt-5 flex h-12 items-center justify-center bg-tinta font-mono text-[11px] uppercase tracking-[0.22em] text-kertas active:bg-tinta-2"
+            >
+              Muat ulang
+            </Link>
           </div>
+        ) : !pesanan.length ? (
+          menyaring ? (
+            <div className="px-6 py-12 text-center">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-tinta-3">
+                Tidak ada yang cocok
+              </p>
+              <p className="mx-auto mt-3 max-w-[17rem] text-sm leading-relaxed text-tinta-2">
+                {cari ? (
+                  <>
+                    Tidak ada order dengan “{cari}”
+                    {statusAktif !== "SEMUA" && (
+                      <> pada saringan {statusAktif.toLowerCase()}</>
+                    )}
+                    .
+                  </>
+                ) : (
+                  <>Belum ada order berstatus {statusAktif.toLowerCase()}.</>
+                )}
+              </p>
+              <Link
+                href={cari ? tanpaCari : "/dashboard"}
+                className="mt-5 inline-flex h-11 items-center border border-tinta px-5 font-mono text-[10px] uppercase tracking-[0.22em] text-tinta active:bg-tinta active:text-kertas"
+              >
+                {cari ? "Hapus pencarian" : "Lihat semua"}
+              </Link>
+            </div>
+          ) : (
+            /* Layar kosong adalah ajakan bertindak. Dua jalan masuk karena
+               memang ada dua: order yang datang sekarang, dan order yang
+               terlanjur tertulis di buku — yang kedua itu justru pembeda
+               utama produk ini, jadi tidak disembunyikan di dalam form. */
+            <div className="mx-4 mt-10 border border-garis bg-white px-6 py-8 text-center md:mx-6">
+              <span
+                className="mx-auto mb-5 block h-px w-8 bg-aksen"
+                aria-hidden="true"
+              />
+              <p className="text-lg font-bold tracking-tight">
+                Catat order pertama
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-tinta-2">
+                Mulai dari nomor HP pelanggan. Order yang sudah tertulis di buku
+                juga bisa dimasukkan.
+              </p>
+              <Link
+                href="/order/baru"
+                className="mt-6 flex h-12 items-center justify-center bg-tinta font-mono text-[11px] uppercase tracking-[0.22em] text-kertas active:bg-tinta-2"
+              >
+                Order baru
+              </Link>
+              <Link
+                href="/order/baru?buku=1"
+                className="mt-2 flex h-12 items-center justify-center border border-garis font-mono text-[11px] uppercase tracking-[0.22em] text-tinta active:bg-kertas"
+              >
+                Order lama dari buku
+              </Link>
+            </div>
+          )
         ) : (
-          <ul className="border-t border-garis md:grid md:grid-cols-2">
+          <>
+          <ul className="flex flex-col gap-2 px-4 pt-3 md:grid md:grid-cols-2 md:gap-3 md:px-6">
             {pesanan.map((p) => (
-              <li key={p.id} className="border-b border-garis md:odd:border-r">
+              <li key={p.id}>
                 <Link
                   href={`/order/${p.id}`}
-                  className="baris relative block px-4 py-4 pl-5 transition-colors hover:bg-white active:bg-white md:px-6 md:pl-7"
+                  className="baris relative block h-full border border-garis bg-white py-3 pl-4 pr-3.5 transition-colors hover:border-tinta-3 active:border-tinta-3"
                 >
                   <span
                     className={`absolute left-0 top-0 h-full w-[3px] ${pitaStatus[p.status]}`}
@@ -173,6 +248,17 @@ export default async function Dashboard({
               </li>
             ))}
           </ul>
+
+          {/* Tepi sobek menutup tumpukan nota, lalu satu baris yang menyatakan
+              daftarnya memang habis — bukan terpotong karena gagal memuat. */}
+          <div
+            className="tepi-sobek mx-4 mt-2 [--warna-latar:#fff] md:mx-6 md:mt-3"
+            aria-hidden="true"
+          />
+          <p className="pb-1 pt-3 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-tinta-3">
+            Ujung daftar
+          </p>
+          </>
         )}
       </KontrolDaftar>
     </div>

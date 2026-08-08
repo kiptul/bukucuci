@@ -4,7 +4,12 @@ import type { Layanan } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrderBaru() {
+export default async function OrderBaru({
+  searchParams,
+}: {
+  searchParams: Promise<{ buku?: string }>;
+}) {
+  const { buku } = await searchParams;
   const { db } = await getProfil();
 
   const { data: layanan } = await db
@@ -23,5 +28,7 @@ export default async function OrderBaru() {
     );
   }
 
-  return <FormOrder layanan={layanan as Layanan[]} />;
+  return (
+    <FormOrder layanan={layanan as Layanan[]} dariBukuAwal={buku === "1"} />
+  );
 }

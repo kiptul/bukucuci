@@ -54,7 +54,7 @@ export default function KontrolDaftar({
           onChange={(e) => setTeks(e.target.value)}
           autoComplete="off"
           placeholder="Cari nama, nomor HP, atau kode"
-          className="w-full border border-garis bg-white px-3.5 py-2.5 pr-11 text-base outline-none focus:border-aksen focus:ring-1 focus:ring-aksen"
+          className="h-12 w-full border border-garis bg-white px-3.5 pr-11 text-base outline-none focus:border-aksen focus:ring-1 focus:ring-aksen"
         />
         {teks.trim() !== cari && !menunggu && (
           <button
@@ -79,7 +79,12 @@ export default function KontrolDaftar({
         )}
       </form>
 
-      <div className="flex gap-1.5 overflow-x-auto border-b border-garis px-4 py-3 md:px-6">
+      {/* Lima saringan dibagi rata selebar layar, bukan deretan yang bisa
+          digeser. Chip yang harus digeser dulu untuk terlihat praktis tidak
+          pernah dipakai — dan kelimanya memang muat di 375px selama jarak
+          antarhurufnya dilonggarkan secukupnya, tidak sampai 0.22em seperti
+          label lain. */}
+      <div className="grid grid-cols-5 gap-1.5 border-b border-garis px-4 py-3 md:px-6">
         {FILTER.map((f) => {
           const aktif = f === statusTampil;
           return (
@@ -89,14 +94,14 @@ export default function KontrolDaftar({
                 setDiklik(f);
                 buka(teks, f);
               }}
-              className={`flex shrink-0 items-center gap-1.5 border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+              className={`flex min-w-0 items-center justify-center gap-1 border px-1 py-2 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
                 aktif
                   ? "border-tinta bg-tinta text-kertas shadow-[0_6px_14px_-10px_rgba(0,0,0,0.8)]"
                   : "border-garis text-tinta-2 hover:border-tinta-3 hover:text-tinta"
               }`}
             >
               {aktif && menunggu && <Putaran kelas="h-3 w-3" />}
-              {f}
+              <span className="truncate">{f}</span>
             </button>
           );
         })}
