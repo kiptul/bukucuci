@@ -28,6 +28,13 @@ yarn-error.log*
 .env*
 !.env.example
 
+# kredensial firmware — pola yang sama dengan .env di atas: nilai asli
+# diabaikan, contekannya ikut ter-commit
+perangkat/*/rahasia.h
+
+# hasil kompilasi PlatformIO
+perangkat/*/.pio/
+
 # vercel
 .vercel
 
