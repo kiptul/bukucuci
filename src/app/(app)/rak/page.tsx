@@ -1,5 +1,6 @@
 import StatusRak, { type OrderAktif, type Slot } from "@/components/ui/StatusRak";
 import KelolaSlot from "@/components/ui/KelolaSlot";
+import SetelanWifi from "@/components/ui/SetelanWifi";
 import { getProfil } from "@/lib/profil";
 import { tanggalLengkap } from "@/lib/format";
 
@@ -35,7 +36,14 @@ export default async function HalamanRak() {
 
   const [{ data: slot }, { data: perangkat }, { data: pesanan }] = await Promise.all([
     db.from("rak_slot").select(KOLOM_SLOT).order("kode"),
-    db.from("rak_perangkat").select("nama, terakhir_kontak").maybeSingle(),
+    // wifi_sandi_baru sengaja tidak ikut diambil. Nilainya tidak dibutuhkan
+    // layar mana pun, dan sekali masuk ke props komponen ia ikut terkirim ke
+    // browser dalam muatan RSC — sandi WiFi laundry tidak perlu pernah sampai
+    // ke sana.
+    db
+      .from("rak_perangkat")
+      .select("nama, terakhir_kontak, wifi_ssid, wifi_ssid_baru, wifi_percobaan, wifi_galat")
+      .maybeSingle(),
     // Hanya order yang cuciannya mungkin ada di rak. DIAMBIL dan BATAL tidak
     // ikut — menawarkannya cuma memperpanjang daftar dengan pilihan yang
     // pasti ditolak action-nya.
@@ -112,6 +120,15 @@ export default async function HalamanRak() {
           />
           <KelolaSlot
             slots={slots.map((s) => ({ kode: s.kode, terisi: s.terisi }))}
+          />
+          <SetelanWifi
+            hidup={hidup}
+            wifi={{
+              ssid: perangkat?.wifi_ssid ?? null,
+              ssidBaru: perangkat?.wifi_ssid_baru ?? null,
+              percobaan: perangkat?.wifi_percobaan ?? 0,
+              galat: perangkat?.wifi_galat ?? null,
+            }}
           />
         </>
       )}

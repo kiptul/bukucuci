@@ -14,11 +14,24 @@
  * ⚠️ Modul jalan di 3.3V maupun 5V, tapi kalau diberi 5V pin OUT-nya ikut
  * mengeluarkan 5V — sementara GPIO ESP8266 bukan 5V-tolerant. Ambil VCC dari
  * pin 3V3, bukan VIN.
+ *
+ * --- WiFi ---
+ * Setelan WiFi TIDAK lagi ditanam di firmware. Ada dua jalur menggantinya:
+ *
+ *   1. Portal — kalau gagal menyambung, papan memancarkan WiFi "Kelar-Rak".
+ *      Sambungkan HP ke situ, halaman setelan terbuka sendiri. Ini jalur
+ *      darurat: dipakai saat WiFi sudah terlanjur berganti dan papan tidak
+ *      bisa lagi dihubungi dari mana pun.
+ *
+ *   2. Titipan dari aplikasi — selagi papan masih online, halaman rak bisa
+ *      menitipkan setelan baru lewat balasan api/rak. Berguna kalau kita tahu
+ *      WiFi AKAN berganti sebelum ia benar-benar berganti.
  */
 
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClientSecure.h>
+#include <WiFiManager.h>
 #include <memory>
 
 // Password WiFi dan DEVICE_TOKEN ditaruh di berkas terpisah yang diabaikan git.
@@ -29,10 +42,19 @@
 #include "rahasia.h"
 
 // ================= KONFIGURASI =================
-const char* WIFI_SSID    = WIFI_SSID_RAHASIA;
-const char* WIFI_PASS    = WIFI_PASS_RAHASIA;
 const char* API_URL      = API_URL_RAHASIA;
 const char* DEVICE_TOKEN = DEVICE_TOKEN_RAHASIA;
+
+// Nama WiFi yang dipancarkan papan saat gagal menyambung. Ini yang dicari
+// pemilik laundry di daftar WiFi HP-nya, jadi jangan diubah tanpa memperbarui
+// petunjuk di halaman rak dan di perangkat/README.md.
+const char* AP_NAMA      = "Kelar-Rak";
+
+// Portal tidak dibiarkan menunggu selamanya. Kalau tidak ada yang mengaturnya
+// dalam 3 menit, papan menyalakan ulang dan mencoba lagi — supaya gangguan
+// WiFi sesaat tidak berujung papan tersangkut di mode portal sampai ada orang
+// yang kebetulan lewat.
+const unsigned long PORTAL_TIMEOUT_DETIK = 180;
 
 const int   JUMLAH_SLOT  = 3;
 
@@ -101,30 +123,53 @@ void loop() {
 }
 
 void sambungWifi() {
-  Serial.printf("Menyambung ke %s", WIFI_SSID);
+  // Kredensial sengaja DIBIARKAN tersimpan di flash. Versi sebelumnya memakai
+  // WiFi.persistent(false) supaya SSID lama tidak dipakai diam-diam — tapi
+  // begitu setelan bisa diganti lewat portal dan lewat aplikasi, justru
+  // penyimpanan itulah yang membuat gantinya bertahan setelah papan mati.
+  WiFi.persistent(true);
   WiFi.mode(WIFI_STA);
 
-  // ESP8266 menyimpan kredensial WiFi terakhir di flash dan memakainya ulang
-  // saat boot. Tanpa ini, SSID lama yang tersimpan bisa dipakai diam-diam dan
-  // membuat perubahan WIFI_SSID di atas seolah-olah tidak berpengaruh.
-  WiFi.persistent(false);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-
-  unsigned long mulai = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - mulai < 20000) {
-    delay(500);
-    Serial.print(".");
+  // Bekal awal: kalau flash masih kosong (papan baru, atau baru naik dari
+  // firmware yang tidak menyimpan apa-apa) dan rahasia.h masih mencantumkan
+  // WiFi, pakai itu sekali supaya pemasangan pertama tidak wajib lewat portal.
+#ifdef WIFI_SSID_RAHASIA
+  if (WiFi.SSID().length() == 0 && strlen(WIFI_SSID_RAHASIA) > 0) {
+    Serial.println("Flash kosong — memakai WiFi dari rahasia.h sebagai bekal awal.");
+    WiFi.begin(WIFI_SSID_RAHASIA, WIFI_PASS_RAHASIA);
+    delay(100);
   }
+#endif
 
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.printf("\nTersambung. IP: %s\n", WiFi.localIP().toString().c_str());
+  WiFiManager wm;
+  wm.setConfigPortalTimeout(PORTAL_TIMEOUT_DETIK);
+  wm.setTitle("Kelar — Modul Rak");
+
+  Serial.println("Menyambung WiFi...");
+
+  // autoConnect memakai kredensial tersimpan. Gagal, ia memancarkan AP_NAMA
+  // dan menahan eksekusi di sini sampai ada yang mengaturnya atau waktunya
+  // habis — itu memang yang diinginkan: papan tanpa jaringan tidak punya
+  // pekerjaan lain yang berguna.
+  if (wm.autoConnect(AP_NAMA)) {
+    Serial.printf("Tersambung ke %s. IP: %s\n",
+                  WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
   } else {
-    Serial.println("\nGagal menyambung WiFi.");
+    Serial.println("Gagal menyambung dan portal kedaluwarsa. Menyalakan ulang.");
+    delay(1000);
+    ESP.restart();
   }
 }
 
 String susunJson() {
-  String json = "{\"slots\":[";
+  String json = "{\"ssid\":\"";
+  json += WiFi.SSID();
+
+  // SSID dilaporkan supaya server bisa membedakan "titipan sudah terkirim"
+  // dari "papan benar-benar pindah". Balasan 200 saat titipan dikirim tidak
+  // membuktikan apa pun — saat itu papan masih di jaringan lama.
+  json += "\",\"slots\":[";
+
   for (int i = 0; i < JUMLAH_SLOT; i++) {
     if (i > 0) json += ",";
     json += "{\"kode\":\"";
@@ -135,6 +180,42 @@ String susunJson() {
   }
   json += "]}";
   return json;
+}
+
+// Ambil satu nilai string dari balasan JSON server.
+//
+// Sengaja tidak memakai ArduinoJson: satu-satunya JSON yang pernah dibaca
+// papan ini datang dari api/rak — bentuknya kita sendiri yang tentukan dan
+// tidak pernah bersarang. Pustaka penuh berarti belasan KB heap tambahan di
+// saat yang sama dengan TLS, dan heap itulah sumber daya paling sempit di
+// ESP8266.
+String ambilNilai(const String& sumber, const String& kunci) {
+  String pola = "\"" + kunci + "\":\"";
+  int mulai = sumber.indexOf(pola);
+  if (mulai < 0) return "";
+  mulai += pola.length();
+  int akhir = sumber.indexOf('"', mulai);
+  if (akhir < 0) return "";
+  return sumber.substring(mulai, akhir);
+}
+
+// Terapkan setelan WiFi titipan dari aplikasi, lalu nyalakan ulang.
+//
+// Menyalakan ulang bukan kemalasan: dengan begitu keberhasilan maupun
+// kegagalannya melewati satu jalur yang sama dengan boot biasa — autoConnect,
+// dan portal kalau gagal. Kalau ditangani di tempat, kita punya dua jalur
+// pemulihan yang harus sama-sama benar, dan yang jarang terpakai akan busuk
+// tanpa ketahuan.
+void terapkanWifi(const String& ssid, const String& sandi) {
+  Serial.printf("Titipan setelan WiFi diterima: %s\n", ssid.c_str());
+
+  WiFi.persistent(true);
+  WiFi.begin(ssid.c_str(), sandi.c_str());
+  delay(500);
+
+  Serial.println("Menyalakan ulang untuk memakai setelan baru.");
+  delay(500);
+  ESP.restart();
 }
 
 void kirimStatus() {
@@ -173,7 +254,21 @@ void kirimStatus() {
 
   int kode = http.POST(body);
   Serial.printf("Respons: %d\n", kode);
-  if (kode > 0) Serial.println(http.getString());
+
+  String balasan;
+  if (kode > 0) {
+    balasan = http.getString();
+    Serial.println(balasan);
+  }
 
   http.end();
+
+  // Dibaca setelah http.end() supaya soket dan buffer TLS sudah dilepas
+  // sebelum papan menyalakan ulang.
+  if (kode == 200) {
+    String ssidBaru = ambilNilai(balasan, "ssid");
+    if (ssidBaru.length() > 0) {
+      terapkanWifi(ssidBaru, ambilNilai(balasan, "sandi"));
+    }
+  }
 }

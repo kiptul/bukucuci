@@ -94,6 +94,60 @@ export async function tambahSlot(_prev: Hasil, formData: FormData): Promise<Hasi
   return { pesan: `Slot ${kode} ditambahkan. Pasang sensornya, lalu daftarkan pinnya di firmware.` };
 }
 
+// Titipkan setelan WiFi baru. Yang ditulis di sini baru niat — perpindahannya
+// belum terjadi dan belum tentu terjadi. Perangkat mengambilnya di kabar
+// berikutnya, dan yang menyatakan berhasil adalah laporan dari jaringan tujuan,
+// bukan tombol ini.
+export async function gantiWifi(_prev: Hasil, formData: FormData): Promise<Hasil> {
+  const ssid = String(formData.get("ssid") ?? "").trim();
+  const sandi = String(formData.get("sandi") ?? "");
+
+  if (!ssid) return { error: "Nama WiFi belum diisi." };
+
+  // WPA2 menolak sandi di bawah 8 karakter, dan perangkat akan gagal
+  // menyambung tanpa pernah bisa menjelaskan kenapa. Ditahan di sini selagi
+  // masih ada yang bisa membaca pesannya.
+  if (sandi && sandi.length < 8) {
+    return { error: "Sandi WiFi minimal 8 karakter." };
+  }
+
+  const { db, laundry } = await getProfil();
+
+  const { error } = await db
+    .from("rak_perangkat")
+    .update({
+      wifi_ssid_baru: ssid,
+      wifi_sandi_baru: sandi,
+      wifi_percobaan: 0,
+      wifi_diminta: new Date().toISOString(),
+      wifi_galat: null,
+    })
+    .eq("laundry_id", laundry.id);
+
+  if (error) return { error: "Gagal menitipkan setelan WiFi." };
+
+  revalidatePath("/rak");
+  return {
+    pesan: `Setelan dititipkan. Perangkat mengambilnya pada kabar berikutnya, paling lama 30 detik, lalu pindah ke "${ssid}".`,
+  };
+}
+
+export async function batalGantiWifi() {
+  const { db, laundry } = await getProfil();
+
+  await db
+    .from("rak_perangkat")
+    .update({
+      wifi_ssid_baru: null,
+      wifi_sandi_baru: null,
+      wifi_percobaan: 0,
+      wifi_galat: null,
+    })
+    .eq("laundry_id", laundry.id);
+
+  revalidatePath("/rak");
+}
+
 export async function hapusSlot(formData: FormData) {
   const kode = String(formData.get("kode") ?? "").trim();
   if (!kode) return;

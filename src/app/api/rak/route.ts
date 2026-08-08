@@ -5,7 +5,14 @@ export const dynamic = "force-dynamic";
 
 type SlotMasuk = { kode: string; terisi: boolean };
 
-// Dipanggil ESP32, bukan browser. Perangkat tidak punya sesi login, jadi
+// Setelah sekian kali dititipkan tanpa perangkat pernah muncul di jaringan
+// tujuan, titipan dibatalkan sendiri. Tanpa batas ini, sandi yang salah ketik
+// membentuk lingkaran: perangkat gagal menyambung, jatuh ke portal, pemilik
+// menyambungkannya ke jaringan lain lewat portal, lalu titipan yang salah itu
+// dikirim lagi dan memutusnya kembali — tanpa ujung.
+const BATAS_PERCOBAAN = 3;
+
+// Dipanggil ESP, bukan browser. Perangkat tidak punya sesi login, jadi
 // rute ini dikecualikan dari proxy (lihat proxy.ts) dan menjaga dirinya
 // sendiri dengan header x-device-token.
 export async function POST(request: Request) {
@@ -27,9 +34,14 @@ export async function POST(request: Request) {
   }
 
   let slots: SlotMasuk[];
+  let ssidSekarang: string | null = null;
   try {
     const isi = await request.json();
     slots = isi?.slots;
+    // Firmware lama tidak mengirim ini. Ketiadaannya bukan galat — hanya
+    // berarti penggantian WiFi lewat aplikasi tidak bisa disahkan, dan
+    // perangkat itu tetap dilayani seperti biasa.
+    if (typeof isi?.ssid === "string" && isi.ssid) ssidSekarang = isi.ssid;
     if (!Array.isArray(slots) || !slots.length) throw new Error();
   } catch {
     return NextResponse.json(
@@ -70,12 +82,49 @@ export async function POST(request: Request) {
     );
   }
 
-  // Tanda perangkat masih hidup. Tanpa ini, ESP32 yang mati terbaca sama
-  // dengan rak yang kebetulan tidak berubah.
-  await db
+  const { data: perangkat } = await db
     .from("rak_perangkat")
-    .update({ terakhir_kontak: new Date().toISOString() })
-    .eq("laundry_id", laundryId);
+    .select("wifi_ssid_baru, wifi_sandi_baru, wifi_percobaan")
+    .eq("laundry_id", laundryId)
+    .maybeSingle();
 
-  return NextResponse.json({ ok: true, diterima: baris.length });
+  // Tanda perangkat masih hidup. Tanpa ini, ESP yang mati terbaca sama
+  // dengan rak yang kebetulan tidak berubah.
+  const ubah: Record<string, unknown> = {
+    terakhir_kontak: new Date().toISOString(),
+  };
+  if (ssidSekarang) ubah.wifi_ssid = ssidSekarang;
+
+  let titipan: { ssid: string; sandi: string } | null = null;
+
+  if (perangkat?.wifi_ssid_baru) {
+    if (ssidSekarang === perangkat.wifi_ssid_baru) {
+      // Perangkat melapor dari jaringan tujuan — inilah satu-satunya bukti
+      // yang sah bahwa perpindahannya berhasil. Balasan 200 saat titipan
+      // dikirim tidak membuktikan apa pun: saat itu ia masih di jaringan lama.
+      ubah.wifi_ssid_baru = null;
+      ubah.wifi_sandi_baru = null;
+      ubah.wifi_percobaan = 0;
+      ubah.wifi_galat = null;
+    } else if ((perangkat.wifi_percobaan ?? 0) >= BATAS_PERCOBAAN) {
+      ubah.wifi_ssid_baru = null;
+      ubah.wifi_sandi_baru = null;
+      ubah.wifi_percobaan = 0;
+      ubah.wifi_galat = `Perangkat tidak pernah muncul di jaringan "${perangkat.wifi_ssid_baru}" setelah ${BATAS_PERCOBAAN} kali dicoba. Periksa nama dan sandinya, atau atur lewat portal Kelar-Rak di perangkat.`;
+    } else {
+      titipan = {
+        ssid: perangkat.wifi_ssid_baru,
+        sandi: perangkat.wifi_sandi_baru ?? "",
+      };
+      ubah.wifi_percobaan = (perangkat.wifi_percobaan ?? 0) + 1;
+    }
+  }
+
+  await db.from("rak_perangkat").update(ubah).eq("laundry_id", laundryId);
+
+  return NextResponse.json({
+    ok: true,
+    diterima: baris.length,
+    ...(titipan ? { wifi: titipan } : {}),
+  });
 }
