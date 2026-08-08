@@ -121,6 +121,16 @@ export default function StatusRak({
       (!s.pesanan || jamSejak(s.terisi_sejak, sekarang) >= AMBANG_MENGENDAP_JAM)
   );
 
+  const tertaut = slots.filter((s) => s.pesanan);
+
+  // Order yang sudah punya tempat, dipetakan ke slotnya. Dipakai memberi tanda
+  // di daftar pilihan: tanpa itu, memindahkan cucian ke slot lain terlihat
+  // sama persis dengan menautkan order yang belum ditaruh di mana-mana.
+  const ditempatkan: Record<string, string> = {};
+  for (const s of tertaut) {
+    if (s.pesanan) ditempatkan[s.pesanan.kode] = s.kode;
+  }
+
   return (
     <>
       <section className="border-b border-garis px-4 py-4 md:px-6">
@@ -244,12 +254,57 @@ export default function StatusRak({
                       <p className="mt-1.5 text-sm leading-relaxed text-tinta-2">
                         Ada cucian di slot ini, tapi belum ketahuan punya siapa.
                       </p>
-                      <TautkanSlot kode={s.kode} orderAktif={orderAktif} />
+                      <TautkanSlot
+                        kode={s.kode}
+                        orderAktif={orderAktif}
+                        ditempatkan={ditempatkan}
+                      />
                     </>
                   )}
                 </li>
               );
             })}
+          </ul>
+        </section>
+      )}
+
+      {/* Slot yang sudah punya pemilik keluar dari "Perlu dibereskan" — memang
+          seharusnya, itu daftar masalah. Tapi tanpa daftar ini, salah pilih
+          order jadi tidak bisa dibatalkan: satu-satunya tombol Lepas ada di
+          daftar yang tidak lagi memuatnya. */}
+      {tertaut.length > 0 && (
+        <section className="border-b border-garis px-4 py-4 md:px-6">
+          <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-tinta-2">
+            Tautan slot
+          </h2>
+
+          <ul className="mt-3 divide-y divide-garis border border-garis bg-white">
+            {tertaut.map((s) => (
+              <li
+                key={s.kode}
+                className="flex items-center justify-between gap-3 px-3.5 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="angka font-mono text-sm font-semibold">
+                    {s.kode}
+                    <span className="mx-1.5 text-tinta-3">·</span>
+                    {s.pesanan?.kode}
+                  </p>
+                  {s.pesanan?.pelanggan && (
+                    <p className="truncate text-sm text-tinta-2">
+                      {s.pesanan.pelanggan.nama}
+                    </p>
+                  )}
+                </div>
+
+                <form action={lepasSlot} className="shrink-0">
+                  <input type="hidden" name="kode" value={s.kode} />
+                  <button className="font-mono text-[11px] uppercase tracking-wider text-tinta-2 underline underline-offset-4 active:opacity-70">
+                    Lepas
+                  </button>
+                </form>
+              </li>
+            ))}
           </ul>
         </section>
       )}

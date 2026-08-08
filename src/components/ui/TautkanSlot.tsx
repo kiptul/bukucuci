@@ -12,9 +12,14 @@ import type { OrderAktif } from "@/components/ui/StatusRak";
 export default function TautkanSlot({
   kode,
   orderAktif,
+  ditempatkan,
 }: {
   kode: string;
   orderAktif: OrderAktif[];
+  // Kode order -> slot yang sedang ditempatinya. Order yang sudah punya tempat
+  // tetap boleh dipilih (memindahkan cucian antar slot itu wajar), tapi harus
+  // terbaca sebagai pemindahan, bukan penautan baru.
+  ditempatkan: Record<string, string>;
 }) {
   const [hasil, jalankan] = useActionState(tautkanSlot, null);
 
@@ -47,6 +52,7 @@ export default function TautkanSlot({
         {orderAktif.map((o) => (
           <option key={o.kode} value={o.kode}>
             {o.kode} — {o.nama}
+            {ditempatkan[o.kode] ? ` (kini di ${ditempatkan[o.kode]})` : ""}
           </option>
         ))}
       </select>
