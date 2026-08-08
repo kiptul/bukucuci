@@ -48,7 +48,13 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  if (!user && path !== "/login") {
+  // Dua halaman yang boleh dilihat tamu. Beranda ikut di sini sejak ia berisi
+  // penjelasan produk: kalau tetap dipagari, calon pengguna yang membuka
+  // tautannya langsung mendarat di form login tanpa pernah tahu ini aplikasi
+  // apa. Beranda sendiri yang melempar pengunjung ber-sesi ke /dashboard.
+  const PUBLIK = new Set(["/", "/login"]);
+
+  if (!user && !PUBLIK.has(path)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";
