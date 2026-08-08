@@ -158,6 +158,27 @@ Serial Monitor harus menampilkan `Respons: 200`.
 - `401` → token tidak cocok
 - `-1` → salah URL, atau ESP32 tidak satu jaringan dengan laptop
 
+**3b. Perangkat diam total setelah buka serial monitor?**
+Gejalanya khas: lampu daya menyala, tapi tidak ada satu pun laporan masuk dan
+Serial Monitor kosong. Ini bukan firmware hang.
+
+Pada NodeMCU, jalur **RTS tersambung ke RST** lewat rangkaian auto-reset. Program
+yang menutup port serial dengan RTS masih ditegaskan meninggalkan papan dalam
+kondisi reset — hidup listriknya, berhenti prosesornya, dan tidak ada gejala
+lain yang menunjukkan sebabnya.
+
+Lepaskan dengan mencabut-colok USB, atau dari Python:
+
+```python
+import serial
+s = serial.Serial("/dev/ttyUSB0", 115200)
+s.dtr = False; s.rts = False
+s.close()
+```
+
+Kalau menulis skrip pembaca serial sendiri, lepaskan kedua jalur itu di blok
+`finally` — bukan cuma saat membuka port.
+
 **4. Realtime?**
 Buka dashboard, tekan saklar. Kotak slot harus berubah warna **tanpa refresh**.
 Kalau tidak berubah: pastikan `alter publication supabase_realtime add table rak_slot;`
