@@ -1,8 +1,16 @@
 # Modul Rak IoT — Kelar
 
-3 saklar → ESP32 → WiFi → API Next.js → Supabase → tampil realtime di layar.
+3 sensor → papan → WiFi → API Next.js → Supabase → tampil realtime di layar.
 
-## Wiring
+Ada dua varian firmware. Sisi server sama persis untuk keduanya — kontrak
+`api/rak`, tabel, dan komponen layar tidak berubah:
+
+| Folder | Papan | Sensor |
+|---|---|---|
+| `esp32_kelar/` | ESP32 DevKit V1 | saklar mekanis |
+| `esp8266_kelar/` | ESP8266 NodeMCU / ESP-12E | modul IR MH-Sensor-Series "Flying-Fish" |
+
+## Wiring — ESP32 + saklar
 
 Tanpa resistor tambahan. Tiap saklar cukup 2 kabel:
 
@@ -17,6 +25,33 @@ Pakai `INPUT_PULLUP`, jadi:
 - saklar lepas (kosong) = **HIGH** → kosong
 
 ⚠️ Jangan pakai GPIO 0, 2, 12, 15 — itu strapping pin, bisa bikin ESP32 gagal boot.
+
+## Wiring — ESP8266 + sensor IR
+
+Tiap modul IR butuh 3 kabel:
+
+| Slot | Pin NodeMCU | GPIO |
+|------|-------------|------|
+| A1   | D1          | 5    |
+| A2   | D2          | 4    |
+| A3   | D5          | 14   |
+
+VCC tiap modul → **3V3**, GND → GND, OUT → pin di tabel.
+
+Modul IR ini active-LOW, jadi polaritasnya kebetulan sama dengan saklar:
+- ada objek di depan sensor = **LOW** → terisi
+- tidak ada objek = **HIGH** → kosong
+
+⚠️ Ambil VCC dari pin **3V3, bukan VIN/5V**. Modul memang jalan di 5V, tapi
+kalau diberi 5V pin OUT-nya ikut mengeluarkan 5V — sementara GPIO ESP8266 bukan
+5V-tolerant.
+
+⚠️ Jangan pakai D3, D4, D8 — strapping pin, bisa bikin papan gagal boot. D0
+(GPIO16) juga tidak bisa: pin itu tidak punya pull-up internal, jadi
+`INPUT_PULLUP` diam-diam tidak berpengaruh di sana.
+
+Jangkauan deteksi diatur lewat potensio di modul, kira-kira 2–30 cm. Setel
+sambil melihat LED indikator di modul: LED menyala saat objek terdeteksi.
 
 ## Langkah Pemasangan
 
@@ -65,14 +100,39 @@ const { data } = await supabase
 <StatusRak awal={data ?? []} />
 ```
 
-### 4. ESP32
+### 4a. ESP32 (Arduino IDE)
 Buka `esp32_kelar/esp32_kelar.ino` di Arduino IDE.
 - Board: **ESP32 Dev Module**
 - Isi `WIFI_SSID`, `WIFI_PASS`, `DEVICE_TOKEN`
 - `API_URL`: saat uji lokal pakai `http://<IP-laptop>:3000/api/rak`,
-  setelah deploy ganti ke `https://kelar.vercel.app/api/rak`
+  setelah deploy ganti ke `https://laundry.iptul.my.id/api/rak`
 
 Upload, lalu buka Serial Monitor di **115200 baud**.
+
+### 4b. ESP8266 (PlatformIO)
+Buka folder `esp8266_kelar/` sebagai project PlatformIO — **folder itu saja,
+bukan akar repo Kelar**. Papan, port, dan baud sudah diatur di `platformio.ini`.
+
+Kredensialnya tidak ditulis di `.ino`, tapi di `rahasia.h` yang diabaikan git —
+pola yang sama dengan `.env.local`. Repo ini punya remote di GitHub, dan
+`DEVICE_TOKEN` adalah satu-satunya pengaman `api/rak`; sekali ter-commit ia
+harus dianggap bocor dan diganti.
+
+Kalau `rahasia.h` belum ada (mis. sehabis clone), salin contekannya lalu isi:
+
+```bash
+cp rahasia.contoh.h rahasia.h
+```
+
+Setelah itu:
+
+```bash
+cd ~/Project/kelar/perangkat/esp8266_kelar
+pio run -t upload && pio device monitor
+```
+
+Kalau upload gagal dengan `Permission denied`, akun belum masuk grup
+`dialout` — jalankan `sudo usermod -aG dialout $USER` lalu logout–login.
 
 ## Pengujian Bertahap
 
@@ -107,8 +167,10 @@ sudah dijalankan.
 
 Tiga hal ini sengaja, dan bisa dijelaskan kalau juri bertanya:
 
-1. **Debounce 50 ms** — saklar mekanis memantul saat ditekan; tanpa ini satu tekanan
-   terbaca beberapa kali.
+1. **Debounce** — 50 ms di varian saklar, 150 ms di varian IR. Saklar mekanis
+   memantul saat ditekan sehingga satu tekanan terbaca beberapa kali. Sensor IR
+   tidak memantul, tapi cucian yang bergoyang di batas jangkauan membuat
+   pembacaan bergetar lebih lambat, jadi ambangnya justru perlu lebih longgar.
 2. **Kirim hanya saat berubah**, bukan tiap detik — hemat data dan baterai.
    Ini pemrosesan di sisi perangkat (edge), bukan sekadar sensor pasif.
 3. **Heartbeat 30 detik** — supaya sistem tahu perangkat mati, bukan sekadar

@@ -19,8 +19,8 @@ const char* WIFI_SSID    = "GANTI_NAMA_WIFI";
 const char* WIFI_PASS    = "GANTI_PASSWORD_WIFI";
 
 // Saat masih lokal, pakai IP laptop: http://192.168.1.10:3000/api/rak
-// Setelah deploy: https://kelar.vercel.app/api/rak
-const char* API_URL      = "https://kelar.vercel.app/api/rak";
+// Setelah deploy: https://laundry.iptul.my.id/api/rak
+const char* API_URL      = "https://laundry.iptul.my.id/api/rak";
 const char* DEVICE_TOKEN = "GANTI_TOKEN_SAMA_DENGAN_ENV";
 
 const int   JUMLAH_SLOT  = 3;
