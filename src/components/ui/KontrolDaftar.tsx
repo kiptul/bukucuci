@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import Putaran from "@/components/ui/Putaran";
 import { FILTER } from "@/lib/filter";
 
 // Kotak cari + filter status + daftarnya sekalian, disatukan supaya ketiganya
@@ -94,13 +93,18 @@ export default function KontrolDaftar({
                 setDiklik(f);
                 buka(teks, f);
               }}
-              className={`flex min-w-0 items-center justify-center gap-1 border px-1 py-2 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
+              className={`flex min-w-0 items-center justify-center border px-1 py-2 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
                 aktif
                   ? "border-tinta bg-tinta text-kertas shadow-[0_6px_14px_-10px_rgba(0,0,0,0.8)]"
                   : "border-garis text-tinta-2 hover:border-tinta-3 hover:text-tinta"
               }`}
             >
-              {aktif && menunggu && <Putaran kelas="h-3 w-3" />}
+              {/* Putaran di dalam chip dihapus saat saringan pindah ke kisi
+                  lima kolom. Diukur dengan fontnya sendiri di lebar 375px:
+                  ruang dalam tiap kotak 53.8px dan "DIAMBIL" 51.8px — putaran
+                  12px plus jaraknya membuat labelnya terpotong jadi "DIAMB…"
+                  tiap kali ditekan. Daftar yang meredup di bawah sudah jadi
+                  penanda menunggu yang lebih besar dan tidak merusak apa pun. */}
               <span className="truncate">{f}</span>
             </button>
           );

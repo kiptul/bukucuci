@@ -250,10 +250,24 @@ export default async function Dashboard({
           </ul>
 
           {/* Tepi sobek menutup tumpukan nota, lalu satu baris yang menyatakan
-              daftarnya memang habis — bukan terpotong karena gagal memuat. */}
+              daftarnya memang habis — bukan terpotong karena gagal memuat.
+
+              Digambar lewat style, bukan kelas .tepi-sobek. Dua alasan: kelas
+              itu menggambar gerigi dari sisi bawah sedangkan di sini yang
+              dibutuhkan dari sisi atas, dan --warna-latar miliknya tidak bisa
+              ditimpa dari utility arbitrer — .tepi-sobek ditulis di luar layer
+              Tailwind sehingga selalu menang. Menimpanya dengan kelas gagal
+              diam-diam: gerigi tergambar sewarna latar, jadi tak terlihat. */}
           <div
-            className="tepi-sobek mx-4 mt-2 [--warna-latar:#fff] md:mx-6 md:mt-3"
             aria-hidden="true"
+            className="mx-4 mt-2 h-2.5 md:mx-6 md:mt-3"
+            style={{
+              backgroundImage:
+                "linear-gradient(45deg,#fff 50%,transparent 50%),linear-gradient(-45deg,#fff 50%,transparent 50%)",
+              backgroundSize: "12px 12px",
+              backgroundRepeat: "repeat-x",
+              backgroundPosition: "top",
+            }}
           />
           <p className="pb-1 pt-3 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-tinta-3">
             Ujung daftar
